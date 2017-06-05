@@ -127,7 +127,7 @@ void ActionDemo::process()
     case PauseAction:
     {
       stopMP3();
-      stopAction();
+      brakeAction();
 
       break;
     }
