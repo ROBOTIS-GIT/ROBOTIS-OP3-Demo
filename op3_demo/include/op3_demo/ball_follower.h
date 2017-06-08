@@ -75,6 +75,7 @@ class BallFollower
   }
 
  protected:
+  const bool DEBUG_PRINT;
   const double CAMERA_HEIGHT;
   const int NOT_FOUND_THRESHOLD;
   const double FOV_WIDTH;
@@ -95,7 +96,6 @@ class BallFollower
   void setWalkingParam(double x_move, double y_move, double rotation_angle, bool balance = true);
   bool getWalkingParam();
 
-  bool debug_print_;
 
   //ros node handle
   ros::NodeHandle nh_;

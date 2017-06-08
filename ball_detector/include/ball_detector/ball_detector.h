@@ -33,7 +33,6 @@
 #ifndef _BALL_DETECTOR_H_
 #define _BALL_DETECTOR_H_
 
-//std
 #include <string>
 
 #include <opencv2/core/core.hpp>

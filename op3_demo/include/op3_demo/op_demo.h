@@ -43,10 +43,6 @@ class OPDemo
   {
     InitPose = 1,
     WalkingReady = 9,
-    //GetUpFront = 81,
-    //GetUpBack = 82,
-    //RightKick = 83,
-    //LeftKick = 84,
     GetUpFront = 122,
     GetUpBack = 123,
     RightKick = 121,

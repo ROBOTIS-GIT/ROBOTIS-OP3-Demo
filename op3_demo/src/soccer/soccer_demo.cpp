@@ -36,11 +36,10 @@ namespace robotis_op
 {
 
 SoccerDemo::SoccerDemo()
-    : FALLEN_FORWARD_LIMIT(60),
-      FALLEN_BEHIND_LIMIT(-60),
+    : FALL_FORWARD_LIMIT(60),
+      FALL_BACK_LIMIT(-60),
       SPIN_RATE(30),
-      debug_code_(false),
-      //enable_(false),
+      DEBUG_PRINT(false),
       wait_count_(0),
       on_following_ball_(false),
       restart_soccer_(false),
@@ -74,12 +73,6 @@ void SoccerDemo::setDemoEnable()
   enable_ = true;
 
   startSoccerMode();
-
-  // handle enable procedure
-  //  ball_tracker_.startTracking();
-  //  ball_follower_.startFollowing();
-
-  //  wait_count_ = 1 * SPIN_RATE;
 }
 
 void SoccerDemo::setDemoDisable()
@@ -113,13 +106,13 @@ void SoccerDemo::process()
     ball_follower_.startFollowing();
     start_following_ = false;
 
-    wait_count_ = 1 * SPIN_RATE;  // wait 1 sec
+    wait_count_ = 1 * SPIN_RATE;
   }
 
   // check to stop
   if (stop_following_ == true)
   {
-    //ball_tracker_.stopTracking();
+    ball_tracker_.stopTracking();
     ball_follower_.stopFollowing();
     stop_following_ = false;
 
@@ -386,7 +379,7 @@ void SoccerDemo::imuDataCallback(const sensor_msgs::Imu::ConstPtr& msg)
   Eigen::MatrixXd rpy_orientation = robotis_framework::convertQuaternionToRPY(orientation);
   rpy_orientation *= (180 / M_PI);
 
-  ROS_INFO_COND(debug_code_, "Roll : %3.2f, Pitch : %2.2f", rpy_orientation.coeff(0, 0), rpy_orientation.coeff(1, 0));
+  ROS_INFO_COND(DEBUG_PRINT, "Roll : %3.2f, Pitch : %2.2f", rpy_orientation.coeff(0, 0), rpy_orientation.coeff(1, 0));
 
   double pitch = rpy_orientation.coeff(1, 0);
 
@@ -396,9 +389,9 @@ void SoccerDemo::imuDataCallback(const sensor_msgs::Imu::ConstPtr& msg)
   else
     present_pitch_ = present_pitch_ * (1 - alpha) + pitch * alpha;
 
-  if (present_pitch_ > FALLEN_FORWARD_LIMIT)
+  if (present_pitch_ > FALL_FORWARD_LIMIT)
     stand_state_ = Fallen_Forward;
-  else if (present_pitch_ < FALLEN_BEHIND_LIMIT)
+  else if (present_pitch_ < FALL_BACK_LIMIT)
     stand_state_ = Fallen_Behind;
   else
     stand_state_ = Stand;
@@ -427,7 +420,8 @@ void SoccerDemo::handleKick(int ball_position)
   usleep(1000 * 1000);
 
   // change to motion module
-  setModuleToDemo("action_module");
+  //setModuleToDemo("action_module");
+  setBodyModuleToDemo("action_module");
 
   usleep(1500 * 1000);
 
@@ -451,7 +445,6 @@ void SoccerDemo::handleKick(int ball_position)
       break;
   }
 
-  // todo : remove this in order to play soccer repeatedly
   on_following_ball_ = false;
 
   usleep(2000 * 1000);
@@ -460,10 +453,9 @@ void SoccerDemo::handleKick(int ball_position)
     return;
 
   // ceremony
-  //std::cout << "Go Ceremony!!!" << std::endl;
   //playMotion(Ceremony);
 
-  //restart_soccer_ = true;
+  restart_soccer_ = true;
 }
 
 bool SoccerDemo::handleFallen(int fallen_status)

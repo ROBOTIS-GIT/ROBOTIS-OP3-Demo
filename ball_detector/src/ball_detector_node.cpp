@@ -47,7 +47,6 @@ int main(int argc, char **argv)
   //node loop
   while (ros::ok())
   {
-
     //if new image , do things
     if (detector.newImage())
     {

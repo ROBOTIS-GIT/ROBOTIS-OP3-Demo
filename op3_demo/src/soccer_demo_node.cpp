@@ -41,10 +41,12 @@
 
 enum Motion_Index
 {
-  GetUpFront = 81,
-  GetUpBack = 82,
-  RightKick = 83,
-  LeftKick = 84,
+  InitPose = 1,
+  WalkingReady = 9,
+  GetUpFront = 122,
+  GetUpBack = 123,
+  RightKick = 121,
+  LeftKick = 120,
   Ceremony = 85,
 };
 
@@ -64,8 +66,8 @@ enum Robot_Status
   ReadyToGetup = 4,
 };
 
-const double FALLEN_FORWARD_LIMIT = 60;
-const double FALLEN_BEHIND_LIMIT = -60;
+const double FALL_FORWARD_LIMIT = 60;
+const double FALL_BACK_LIMIT = -60;
 const int SPIN_RATE = 30;
 
 void callbackThread();
@@ -386,9 +388,9 @@ void imuDataCallback(const sensor_msgs::Imu::ConstPtr& msg)
   else
     present_pitch = present_pitch * 0.5 + pitch * 0.5;
 
-  if (present_pitch > FALLEN_FORWARD_LIMIT)
+  if (present_pitch > FALL_FORWARD_LIMIT)
     stand_state = Fallen_Forward;
-  else if (present_pitch < FALLEN_BEHIND_LIMIT)
+  else if (present_pitch < FALL_BACK_LIMIT)
     stand_state = Fallen_Behind;
   else
     stand_state = Stand;
@@ -417,7 +419,6 @@ void handleKick(int ball_position)
   usleep(500 * 1000);
 
   // change to motion module
-  // setBodyModuleToDemo("action_module");
   setModuleToDemo("action_module");
 
   usleep(1000 * 1000);
@@ -489,7 +490,6 @@ bool handleFallen(int fallen_status)
     restart_soccer = true;
 
   // reset state
-  //stand_state = Stand;
   on_following_ball = false;
 
   return true;

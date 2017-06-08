@@ -58,7 +58,6 @@ MicTest::MicTest()
 
 MicTest::~MicTest()
 {
-  // TODO Auto-generated destructor stub
 }
 
 void MicTest::setDemoEnable()
@@ -68,7 +67,6 @@ void MicTest::setDemoEnable()
   enable_ = true;
 
   ROS_INFO("Start Mic test Demo");
-
 }
 
 void MicTest::setDemoDisable()
@@ -185,15 +183,12 @@ void MicTest::announceTest()
   // play mic test sound
   playSound(default_mp3_path_ + "Announce mic test.mp3");
 
-  //startTimer(3.0);
   usleep(3.4 * 1000 * 1000);
 }
 
 void MicTest::recordSound(int recording_time)
 {
   ROS_INFO("Start to record");
-  // arecord -D plughw:1,0 -f S16_LE -c1 -r22050 -t raw -d 5 | lame -r -s 22.05 -m m -b 64 - mic-input.mp3
-  // arecord -D plughw:1,0 -f S16_LE -c1 -r22050 -t wav -d 5 test.wav
 
   playSound(default_mp3_path_ + "Start recording.mp3");
 
@@ -209,8 +204,6 @@ void MicTest::recordSound(int recording_time)
     case -1:
       fprintf(stderr, "Fork Failed!! \n");
       ROS_WARN("Fork Failed!! \n");
-      //done_msg.data = "play_sound_fail";
-      //g_done_msg_pub.publish(done_msg);
       break;
 
     case 0:
@@ -283,12 +276,10 @@ void MicTest::startTimer(double wait_time)
 {
   start_time_ = ros::Time::now();
   wait_time_ = wait_time;
-  //is_wait_ = true;
 }
 
 void MicTest::finishTimer()
 {
-  //is_wait_ = false;
   wait_time_ = -1;
 }
 

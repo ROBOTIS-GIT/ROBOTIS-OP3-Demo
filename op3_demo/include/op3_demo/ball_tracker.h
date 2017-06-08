@@ -87,7 +87,6 @@ class BallTracker
 
   void ballPositionCallback(const ball_detector::circleSetStamped::ConstPtr &msg);
   void ballTrackerCommandCallback(const std_msgs::String::ConstPtr &msg);
-  void currentJointStatesCallback(const sensor_msgs::JointState::ConstPtr &msg);
   void publishHeadJoint(double pan, double tilt);
   void scanBall();
 
@@ -103,7 +102,6 @@ class BallTracker
 
   ros::Subscriber ball_position_sub_;
   ros::Subscriber ball_tracking_command_sub_;
-  ros::Subscriber current_joint_states_sub_;
 
   // (x, y) is the center position of the ball in image coordinates
   // z is the ball radius
@@ -112,7 +110,6 @@ class BallTracker
   bool use_head_scan_;
   int count_not_found_;
   bool on_tracking_;
-  double current_head_pan_, current_head_tilt_;
   double current_ball_pan_, current_ball_tilt_;
   double current_ball_bottom_;
   ros::Time prev_time_;
