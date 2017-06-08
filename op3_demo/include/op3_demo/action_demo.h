@@ -73,6 +73,7 @@ class ActionDemo : public OPDemo
 
   const int SPIN_RATE;
   const int DEMO_INIT_POSE;
+  const bool DEBUG_PRINT;
 
   void processThread();
   void callbackThread();
@@ -117,10 +118,6 @@ class ActionDemo : public OPDemo
   std::string script_path_;
   std::string play_list_name_;
   int play_index_;
-
-  bool start_play_;
-  bool stop_play_;
-  bool pause_play_;
 
   int play_status_;
 };

@@ -55,6 +55,7 @@ void setLED(int led);
 bool checkManagerRunning(std::string& manager_name);
 
 const int SPIN_RATE = 30;
+const bool DEBUG_PRINT = false;
 
 ros::Publisher init_pose_pub;
 ros::Publisher play_sound_pub;
@@ -100,13 +101,14 @@ int main(int argc, char **argv)
     if (checkManagerRunning(manager_name) == true)
     {
       break;
-      ROS_INFO("Succeed to connect");
+      ROS_INFO_COND(DEBUG_PRINT, "Succeed to connect");
     }
     ROS_WARN("Waiting for op3 manager");
   }
 
   // init procedure
   playSound(default_mp3_path + "Demonstration ready mode.mp3");
+  // turn on R/G/B LED
   setLED(0x01 | 0x02 | 0x04);
 
   //node loop
@@ -127,7 +129,7 @@ int main(int argc, char **argv)
 
           goInitPose();
 
-          ROS_INFO("[Go to Demo READY!]");
+          ROS_INFO_COND(DEBUG_PRINT, "[Go to Demo READY!]");
           break;
         }
 
@@ -139,7 +141,7 @@ int main(int argc, char **argv)
           current_demo = soccer_demo;
           current_demo->setDemoEnable();
 
-          ROS_INFO("[Start] Soccer Demo");
+          ROS_INFO_COND(DEBUG_PRINT, "[Start] Soccer Demo");
           break;
         }
 
@@ -150,7 +152,7 @@ int main(int argc, char **argv)
 
           current_demo = vision_demo;
           current_demo->setDemoEnable();
-          ROS_INFO("[Start] Vision Demo");
+          ROS_INFO_COND(DEBUG_PRINT, "[Start] Vision Demo");
           break;
         }
         case ActionDemo:
@@ -160,7 +162,7 @@ int main(int argc, char **argv)
 
           current_demo = action_demo;
           current_demo->setDemoEnable();
-          ROS_INFO("[Start] Action Demo");
+          ROS_INFO_COND(DEBUG_PRINT, "[Start] Action Demo");
           break;
         }
 
@@ -172,30 +174,6 @@ int main(int argc, char **argv)
 
       apply_desired = false;
       current_status = desired_status;
-    }
-    else
-    {
-      if (current_status != desired_status)
-      {
-//        // sound out desired status
-//        switch (desired_status)
-//        {
-//          case SoccerDemo:
-//            playSound(default_path + "Autonomous soccer mode.mp3");
-//            break;
-//
-//          case VisionDemo:
-//            playSound(default_path + "Vision processing mode.mp3");
-//            break;
-//
-//          case ActionDemo:
-//            playSound(default_path + "Interactive motion mode.mp3");
-//            break;
-//
-//          default:
-//            break;
-//        }
-      }
     }
 
     //execute pending callbacks
@@ -257,7 +235,7 @@ void buttonHandlerCallback(const std_msgs::String::ConstPtr& msg)
           break;
       }
 
-      ROS_INFO("= Start Demo Mode : %d", desired_status);
+      ROS_INFO_COND(DEBUG_PRINT, "= Start Demo Mode : %d", desired_status);
     }
     else if (msg->data == "mode")
     {
@@ -265,7 +243,7 @@ void buttonHandlerCallback(const std_msgs::String::ConstPtr& msg)
       desired_status = (desired_status + 1) % DemoCount;
       desired_status = (desired_status == Ready) ? desired_status + 1 : desired_status;
 
-      // sound out desired status and changign LED
+      // sound out desired status and changing LED
       switch (desired_status)
       {
         case SoccerDemo:
@@ -287,7 +265,7 @@ void buttonHandlerCallback(const std_msgs::String::ConstPtr& msg)
           break;
       }
 
-      ROS_INFO("= Demo Mode : %d", desired_status);
+      ROS_INFO_COND(DEBUG_PRINT, "= Demo Mode : %d", desired_status);
     }
   }
 }

@@ -38,11 +38,8 @@
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <std_msgs/String.h>
-//#include <std_msgs/Int32MultiArray.h>
-//#include <geometry_msgs/Point.h>
 
 #include "op3_demo/op_demo.h"
-//#include "op3_demo/face_tracker.h"
 
 #include "robotis_controller_msgs/SyncWriteItem.h"
 
@@ -66,31 +63,17 @@ class ButtonTest : public OPDemo
 
   void process();
 
-//  void playMotion(int motion_index);
   void setRGBLED(int blue, int green, int red);
   void setLED(int led);
 
   void playSound(const std::string &path);
 
   void buttonHandlerCallback(const std_msgs::String::ConstPtr& msg);
-//  void facePositionCallback(const std_msgs::Int32MultiArray::ConstPtr &msg);
 
-//  void setModuleToDemo(const std::string &module_name);
-
-//  FaceTracker face_tracker_;
-
-//  ros::Publisher module_control_pub_;
-//  ros::Publisher motion_index_pub_;
   ros::Publisher rgb_led_pub_;
   ros::Publisher play_sound_pub_;
-
   ros::Subscriber buttuon_sub_;
-//  ros::Subscriber faceCoord_sub_;
 
-//  geometry_msgs::Point face_position_;
-
-//  bool is_tracking_;
-//  int tracking_status_;
   std::string default_mp3_path_;
   int led_count_;
   int rgb_led_count_;

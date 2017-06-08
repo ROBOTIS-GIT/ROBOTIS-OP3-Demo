@@ -72,9 +72,10 @@ class SoccerDemo : public OPDemo
   void setDemoDisable();
 
  protected:
-  const double FALLEN_FORWARD_LIMIT;
-  const double FALLEN_BEHIND_LIMIT;
+  const double FALL_FORWARD_LIMIT;
+  const double FALL_BACK_LIMIT;
   const int SPIN_RATE;
+  const bool DEBUG_PRINT;
 
   void processThread();
   void callbackThread();
@@ -110,7 +111,6 @@ class SoccerDemo : public OPDemo
   std::map<int, std::string> id_joint_table_;
   std::map<std::string, int> joint_id_table_;
 
-  bool debug_code_;
   int wait_count_;
   bool on_following_ball_;
   bool restart_soccer_;

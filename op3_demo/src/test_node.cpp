@@ -201,30 +201,6 @@ int main(int argc, char **argv)
       apply_desired = false;
       current_status = desired_status;
     }
-    else
-    {
-      if (current_status != desired_status)
-      {
-//        // sound out desired status
-//        switch (desired_status)
-//        {
-//          case SoccerDemo:
-//            playSound(default_path + "Autonomous soccer mode.mp3");
-//            break;
-//
-//          case VisionDemo:
-//            playSound(default_path + "Vision processing mode.mp3");
-//            break;
-//
-//          case ActionDemo:
-//            playSound(default_path + "Interactive motion mode.mp3");
-//            break;
-//
-//          default:
-//            break;
-//        }
-      }
-    }
 
     //execute pending callbacks
     ros::spinOnce();

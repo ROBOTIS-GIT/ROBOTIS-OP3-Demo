@@ -39,8 +39,6 @@ ButtonTest::ButtonTest()
     : SPIN_RATE(30),
       led_count_(0),
       rgb_led_count_(0)
-//      is_tracking_(false),
-//      tracking_status_(FaceTracker::Waiting)
 {
   enable_ = false;
 
@@ -54,68 +52,23 @@ ButtonTest::ButtonTest()
 
 ButtonTest::~ButtonTest()
 {
-  // TODO Auto-generated destructor stub
 }
 
 void ButtonTest::setDemoEnable()
 {
-  // change to motion module
-//  setModuleToDemo("action_module");
-
-//  usleep(100 * 1000);
-
-//  playMotion(InitPose);
-
-//  usleep(1500 * 1000);
-
-//  setModuleToDemo("head_control_module");
-
-//  usleep(10 * 1000);
-
   enable_ = true;
-//  face_tracker_.startTracking();
 
   ROS_INFO("Start Button Test");
-
 }
 
 void ButtonTest::setDemoDisable()
 {
-
-//  face_tracker_.stopTracking();
-//  is_tracking_ = false;
-//  tracking_status_ = FaceTracker::Waiting;
   enable_ = false;
 }
 
 void ButtonTest::process()
 {
-  //bool is_tracked = face_tracker_.processTracking();
-//  int tracking_status = face_tracker_.processTracking();
 
-//if(is_tracking_ != is_tracked)
-//  if(tracking_status_ != tracking_status)
-//  {
-//    switch(tracking_status)
-//    {
-//      case FaceTracker::Found:
-//        setRGBLED(0x1F, 0x1F, 0x1F);
-//        break;
-//
-//      case FaceTracker::NotFound:
-//        setRGBLED(0, 0, 0);
-//        break;
-//
-//      default:
-//        break;
-//    }
-//  }
-
-//  if(tracking_status != FaceTracker::Waiting)
-//    tracking_status_ = tracking_status;
-
-//is_tracking_ = is_tracked;
-//  std::cout << "Tracking : " << tracking_status << std::endl;
 }
 
 void ButtonTest::processThread()
@@ -139,13 +92,10 @@ void ButtonTest::callbackThread()
   ros::NodeHandle nh(ros::this_node::getName());
 
   // subscriber & publisher
-//  module_control_pub_ = nh.advertise<std_msgs::String>("/robotis/enable_ctrl_module", 0);
-//  motion_index_pub_ = nh.advertise<std_msgs::Int32>("/robotis/action/page_num", 0);
   rgb_led_pub_ = nh.advertise<robotis_controller_msgs::SyncWriteItem>("/robotis/sync_write_item", 0);
   play_sound_pub_ = nh.advertise<std_msgs::String>("/play_sound_file", 0);
 
   buttuon_sub_ = nh.subscribe("/robotis/open_cr/button", 1, &ButtonTest::buttonHandlerCallback, this);
-//  faceCoord_sub_ = nh.subscribe("/faceCoord", 1, &ButtonTest::facePositionCallback, this);
 
   while (nh.ok())
   {
@@ -193,47 +143,6 @@ void ButtonTest::buttonHandlerCallback(const std_msgs::String::ConstPtr& msg)
     playSound(default_mp3_path_ + "User button long pressed.mp3");
   }
 }
-
-//void ButtonTest::setModuleToDemo(const std::string &module_name)
-//{
-//  std_msgs::String control_msg;
-//  control_msg.data = module_name;
-//
-//  module_control_pub_.publish(control_msg);
-//  std::cout << "enable module : " << module_name << std::endl;
-//}
-//
-//void ButtonTest::facePositionCallback(const std_msgs::Int32MultiArray::ConstPtr &msg)
-//{
-//  if (enable_ == false)
-//    return;
-//
-//  // face is detected
-//  if (msg->data.size() >= 10)
-//  {
-//    // center of face
-//    face_position_.x = (msg->data[6] + msg->data[8] * 0.5) / msg->data[2] * 2 - 1;
-//    face_position_.y = (msg->data[7] + msg->data[9] * 0.5) / msg->data[3] * 2 - 1;
-//    face_position_.z = msg->data[8] * 0.5 + msg->data[9] * 0.5;
-//
-//    face_tracker_.setFacePosition(face_position_);
-//  }
-//  else
-//  {
-//    face_position_.x = 0;
-//    face_position_.y = 0;
-//    face_position_.z = 0;
-//    return;
-//  }
-//}
-//
-//void ButtonTest::playMotion(int motion_index)
-//{
-//  std_msgs::Int32 motion_msg;
-//  motion_msg.data = motion_index;
-//
-//  motion_index_pub_.publish(motion_msg);
-//}
 
 void ButtonTest::setRGBLED(int blue, int green, int red)
 {

@@ -60,7 +60,7 @@ BallFollower::BallFollower()
       current_tilt_(-10),
       current_x_move_(0.005),
       current_r_angle_(0),
-      debug_print_(false)
+      DEBUG_PRINT(false)
 {
   current_joint_states_sub_ = nh_.subscribe("/robotis/goal_joint_states", 10, &BallFollower::currentJointStatesCallback,
                                             this);
@@ -157,10 +157,10 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
     return false;
   }
 
-  ROS_INFO_COND(debug_print_, "   ============== Head | Ball ==============   ");
-  ROS_INFO_STREAM_COND(debug_print_,
+  ROS_INFO_COND(DEBUG_PRINT, "   ============== Head | Ball ==============   ");
+  ROS_INFO_STREAM_COND(DEBUG_PRINT,
                        "== Head Pan : " << (current_pan_ * 180 / M_PI) << " | Ball X : " << (x_angle * 180 / M_PI));
-  ROS_INFO_STREAM_COND(debug_print_,
+  ROS_INFO_STREAM_COND(DEBUG_PRINT,
                        "== Head Tilt : " << (current_tilt_ * 180 / M_PI) << " | Ball Y : " << (y_angle * 180 / M_PI));
 
   approach_ball_position_ = NotFound;
@@ -179,20 +179,17 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
 
   // check whether ball is correct position.
   if ((distance_to_ball < distance_to_kick) && (fabs(ball_x_angle) < 25.0))
-  //if ((ball_y_angle < -65) && (fabs(current_pan_) < 25))
   {
     count_to_kick_ += 1;
 
-    ROS_INFO_STREAM_COND(debug_print_,
+    ROS_INFO_STREAM_COND(DEBUG_PRINT,
                          "head pan : " << (current_pan_ * 180 / M_PI) << " | ball pan : " << (x_angle * 180 / M_PI));
-    ROS_INFO_STREAM_COND(debug_print_,
+    ROS_INFO_STREAM_COND(DEBUG_PRINT,
                          "head tilt : " << (current_tilt_ * 180 / M_PI) << " | ball tilt : " << (y_angle * 180 / M_PI));
-    ROS_INFO_STREAM_COND(debug_print_, "foot to kick : " << accum_ball_position_);
+    ROS_INFO_STREAM_COND(DEBUG_PRINT, "foot to kick : " << accum_ball_position_);
 
     ROS_INFO("In range [%d]", count_to_kick_);
 
-    //if (fabs(x_angle) < 10 * M_PI / 180)
-    //{
     if (count_to_kick_ > 20)
     {
       setWalkingCommand("stop");
@@ -201,12 +198,12 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
       // check direction of the ball
       if (accum_ball_position_ > 0)
       {
-        ROS_INFO("Ready to kick : left");  // left
+        ROS_INFO_COND(DEBUG_PRINT, "Ready to kick : left");  // left
         approach_ball_position_ = OnLeft;
       }
       else
       {
-        ROS_INFO("Ready to kick : right");  // right
+        ROS_INFO_COND(DEBUG_PRINT, "Ready to kick : right");  // right
         approach_ball_position_ = OnRight;
       }
 
@@ -215,7 +212,6 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
     else if (count_to_kick_ > 15)
     {
       if (ball_x_angle > 0)
-        //if( current_pan_ > 0)
         accum_ball_position_ += 1;
       else
         accum_ball_position_ -= 1;
@@ -225,7 +221,6 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
 
       return false;
     }
-    //}
   }
   else
   {
@@ -245,15 +240,15 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
     fb_move = fmax(fb_goal, MIN_FB_STEP);
   }
 
-  ROS_INFO("distance to ball : %6.4f, fb : %6.4f, delta : %6.6f", distance_to_ball, fb_move, delta_time);
-  ROS_INFO("==============================================");
+  ROS_INFO_COND(DEBUG_PRINT, "distance to ball : %6.4f, fb : %6.4f, delta : %6.6f", distance_to_ball, fb_move,
+                delta_time);
+  ROS_INFO_COND(DEBUG_PRINT, "==============================================");
 
   // calc rl angle
   double rl_goal, rl_angle;
   if (fabs(current_pan_) * 180 / M_PI > 5.0)
   {
     double rl_offset = fabs(current_pan_) * 0.3;
-    //double rl_offset = fabs(ball_x_angle) * 0.3;
     rl_goal = fmin(rl_offset, MAX_RL_TURN);
     rl_goal = fmax(rl_goal, MIN_RL_TURN);
     rl_angle = fmin(fabs(current_r_angle_) + UNIT_RL_TURN, rl_goal);
@@ -289,7 +284,7 @@ void BallFollower::setWalkingCommand(const std::string &command)
   _command_msg.data = command;
   set_walking_command_pub_.publish(_command_msg);
 
-  ROS_INFO_STREAM("Send Walking command : " << command);
+  ROS_INFO_STREAM_COND(DEBUG_PRINT, "Send Walking command : " << command);
 }
 
 void BallFollower::setWalkingParam(double x_move, double y_move, double rotation_angle, bool balance)
@@ -314,7 +309,7 @@ bool BallFollower::getWalkingParam()
     current_walking_param_ = walking_param_msg.response.parameters;
 
     // update ui
-    ROS_INFO("Get walking parameters");
+    ROS_INFO_COND(DEBUG_PRINT, "Get walking parameters");
 
     return true;
   }

@@ -38,10 +38,8 @@ namespace robotis_op
 ActionDemo::ActionDemo()
     : SPIN_RATE(30),
       DEMO_INIT_POSE(8),
+      DEBUG_PRINT(false),
       play_index_(0),
-      start_play_(false),
-      stop_play_(false),
-      pause_play_(false),
       play_status_(StopAction)
 {
   enable_ = false;
@@ -62,7 +60,6 @@ ActionDemo::ActionDemo()
 
 ActionDemo::~ActionDemo()
 {
-  // TODO Auto-generated destructor stub
 }
 
 void ActionDemo::setDemoEnable()
@@ -73,7 +70,7 @@ void ActionDemo::setDemoEnable()
 
   enable_ = true;
 
-  ROS_INFO("Start ActionScript Demo");
+  ROS_INFO_COND(DEBUG_PRINT, "Start ActionScript Demo");
 
   playAction(DEMO_INIT_POSE);
 
@@ -91,9 +88,6 @@ void ActionDemo::setDemoDisable()
 
 void ActionDemo::process()
 {
-  // check current status
-  //handleStatus();
-
   switch (play_status_)
   {
     case PlayAction:
@@ -127,7 +121,7 @@ void ActionDemo::process()
     case PauseAction:
     {
       stopMP3();
-      stopAction();
+      brakeAction();
 
       break;
     }
@@ -145,50 +139,25 @@ void ActionDemo::process()
   }
 }
 
-void ActionDemo::handleStatus()
-{
-  if (start_play_ == true)
-  {
-    play_status_ = PlayAction;
-    start_play_ = false;
-  }
-
-  if (pause_play_ == true)
-  {
-    play_status_ = PauseAction;
-    pause_play_ = false;
-  }
-
-  if (stop_play_ == true)
-  {
-    play_status_ = StopAction;
-    stop_play_ = false;
-  }
-}
-
 void ActionDemo::startProcess(const std::string &set_name)
 {
   parseActionScriptSetName(script_path_, set_name);
 
-  start_play_ = true;
   play_status_ = PlayAction;
 }
 
 void ActionDemo::resumeProcess()
 {
-  start_play_ = true;
   play_status_ = PlayAction;
 }
 
 void ActionDemo::pauseProcess()
 {
-  pause_play_ = true;
   play_status_ = PauseAction;
 }
 
 void ActionDemo::stopProcess()
 {
-  stop_play_ = true;
   play_index_ = 0;
   play_status_ = StopAction;
 }
@@ -294,7 +263,7 @@ bool ActionDemo::playActionWithSound(int motion_index)
   playAction(motion_index);
   playMP3(map_it->second);
 
-  ROS_INFO_STREAM("action : " << motion_index << ", mp3 path : " << map_it->second);
+  ROS_INFO_STREAM_COND(DEBUG_PRINT, "action : " << motion_index << ", mp3 path : " << map_it->second);
 
   return true;
 }
@@ -399,27 +368,6 @@ void ActionDemo::buttonHandlerCallback(const std_msgs::String::ConstPtr& msg)
 
 void ActionDemo::setModuleToDemo(const std::string &module_name)
 {
-//  robotis_controller_msgs::JointCtrlModule control_msg;
-//
-//  // todo : remove hard coding
-//  for (int ix = 1; ix <= 20; ix++)
-//  {
-//    std::string joint_name;
-//
-//    if (getJointNameFromID(ix, joint_name) == false)
-//      continue;
-//
-//    control_msg.joint_name.push_back(joint_name);
-//    control_msg.module_name.push_back(module_name);
-//  }
-//
-//  // no control
-//  if (control_msg.joint_name.size() == 0)
-//    return;
-//
-//  module_control_pub_.publish(control_msg);
-//  std::cout << "enable module : " << module_name << std::endl;
-
   std_msgs::String control_msg;
   control_msg.data = "action_module";
 
