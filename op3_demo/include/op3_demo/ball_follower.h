@@ -130,6 +130,9 @@ class BallFollower
   double hip_pitch_offset_;
   ros::Time prev_time_;
 
+  double curr_period_time_;
+  double accum_period_time_;
+
 };
 }
 

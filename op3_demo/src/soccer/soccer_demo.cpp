@@ -420,8 +420,7 @@ void SoccerDemo::handleKick(int ball_position)
   usleep(1000 * 1000);
 
   // change to motion module
-  //setModuleToDemo("action_module");
-  setBodyModuleToDemo("action_module");
+  setModuleToDemo("action_module");
 
   usleep(1500 * 1000);
 
@@ -446,6 +445,7 @@ void SoccerDemo::handleKick(int ball_position)
   }
 
   on_following_ball_ = false;
+  restart_soccer_ = true;
 
   usleep(2000 * 1000);
 
@@ -454,8 +454,6 @@ void SoccerDemo::handleKick(int ball_position)
 
   // ceremony
   //playMotion(Ceremony);
-
-  restart_soccer_ = true;
 }
 
 bool SoccerDemo::handleFallen(int fallen_status)

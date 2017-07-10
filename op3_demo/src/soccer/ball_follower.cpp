@@ -46,7 +46,7 @@ BallFollower::BallFollower()
       kick_motion_index_(83),
       CAMERA_HEIGHT(0.46),
       NOT_FOUND_THRESHOLD(50),
-      MAX_FB_STEP(35.0 * 0.001),
+      MAX_FB_STEP(25.0 * 0.001),
       MAX_RL_TURN(15.0 * M_PI / 180),
       MIN_FB_STEP(5.0 * 0.001),
       MIN_RL_TURN(5.0 * M_PI / 180),
@@ -54,12 +54,14 @@ BallFollower::BallFollower()
       UNIT_RL_TURN(0.5 * M_PI / 180),
       SPOT_FB_OFFSET(0.0 * 0.001),
       SPOT_RL_OFFSET(0.0 * 0.001),
-      SPOT_ANGLE_OFFSET(0.0 * M_PI / 180),
+      SPOT_ANGLE_OFFSET(0.0),
       hip_pitch_offset_(7.0),
       current_pan_(-10),
       current_tilt_(-10),
       current_x_move_(0.005),
       current_r_angle_(0),
+      curr_period_time_(0.6),
+      accum_period_time_(0.0),
       DEBUG_PRINT(false)
 {
   current_joint_states_sub_ = nh_.subscribe("/robotis/goal_joint_states", 10, &BallFollower::currentJointStatesCallback,
@@ -90,10 +92,12 @@ void BallFollower::startFollowing()
   if (result == true)
   {
     hip_pitch_offset_ = current_walking_param_.hip_pitch_offset;
+    curr_period_time_ = current_walking_param_.period_time;
   }
   else
   {
     hip_pitch_offset_ = 7.0 * M_PI / 180;
+    curr_period_time_ = 0.6;
   }
 }
 
@@ -228,27 +232,35 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
     accum_ball_position_ = 0;
   }
 
-  fb_goal = fmin(distance_to_ball * 0.1, MAX_FB_STEP);
-  if ((distance_to_ball * 0.1 / 2) < current_x_move_)
+  double next_movement = current_x_move_;
+  double distance_to_walk = distance_to_ball - distance_to_kick;
+  if(distance_to_walk < 0)
+    distance_to_walk = 0.0;
+
+  fb_goal = fmin(distance_to_walk * 0.1, MAX_FB_STEP);
+
+  accum_period_time_ += delta_time;
+  if (accum_period_time_ > (curr_period_time_ * 0.25))
   {
-    fb_goal = fmin(current_x_move_ - UNIT_FB_STEP, fb_goal);
-    fb_move = fmax(fb_goal, MIN_FB_STEP);
+    accum_period_time_ = 0.0;
+    if ((distance_to_walk * 0.1 / 2) < current_x_move_)
+      next_movement -= UNIT_FB_STEP;
+    else
+      next_movement += UNIT_FB_STEP;
   }
-  else
-  {
-    fb_goal = fmin(current_x_move_ + UNIT_FB_STEP, fb_goal);
-    fb_move = fmax(fb_goal, MIN_FB_STEP);
-  }
+
+  fb_goal = fmin(next_movement, fb_goal);
+  fb_move = fmax(fb_goal, MIN_FB_STEP);
 
   ROS_INFO_COND(DEBUG_PRINT, "distance to ball : %6.4f, fb : %6.4f, delta : %6.6f", distance_to_ball, fb_move,
                 delta_time);
   ROS_INFO_COND(DEBUG_PRINT, "==============================================");
 
   // calc rl angle
-  double rl_goal, rl_angle;
+  double rl_goal = 0.0, rl_angle = 0.0;
   if (fabs(current_pan_) * 180 / M_PI > 5.0)
   {
-    double rl_offset = fabs(current_pan_) * 0.3;
+    double rl_offset = fabs(current_pan_) * 0.2;
     rl_goal = fmin(rl_offset, MAX_RL_TURN);
     rl_goal = fmax(rl_goal, MIN_RL_TURN);
     rl_angle = fmin(fabs(current_r_angle_) + UNIT_RL_TURN, rl_goal);
@@ -259,6 +271,9 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
 
   // send message
   setWalkingParam(fb_move, 0, rl_angle);
+
+  // for debug
+  ROS_INFO("distance to ball : %6.4f, fb : %6.4f, delta : %6.6f", distance_to_ball, fb_move, delta_time);
 
   return false;
 }
