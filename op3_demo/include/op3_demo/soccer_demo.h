@@ -111,6 +111,7 @@ class SoccerDemo : public OPDemo
   std::map<int, std::string> id_joint_table_;
   std::map<std::string, int> joint_id_table_;
 
+  bool is_grass_;
   int wait_count_;
   bool on_following_ball_;
   bool restart_soccer_;

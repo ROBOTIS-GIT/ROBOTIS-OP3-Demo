@@ -46,11 +46,11 @@ BallFollower::BallFollower()
       kick_motion_index_(83),
       CAMERA_HEIGHT(0.46),
       NOT_FOUND_THRESHOLD(50),
-      MAX_FB_STEP(25.0 * 0.001),
+      MAX_FB_STEP(35.0 * 0.001),
       MAX_RL_TURN(15.0 * M_PI / 180),
       MIN_FB_STEP(5.0 * 0.001),
       MIN_RL_TURN(5.0 * M_PI / 180),
-      UNIT_FB_STEP(0.5 * 0.001),
+      UNIT_FB_STEP(1.0 * 0.001),
       UNIT_RL_TURN(0.5 * M_PI / 180),
       SPOT_FB_OFFSET(0.0 * 0.001),
       SPOT_RL_OFFSET(0.0 * 0.001),
@@ -139,6 +139,44 @@ void BallFollower::currentJointStatesCallback(const sensor_msgs::JointState::Con
   current_tilt_ = tilt;
 }
 
+void BallFollower::calcFootstep(double target_distance, double target_angle, double delta_time,
+                                double& fb_move, double& rl_angle)
+{
+  // clac fb
+  double next_movement = current_x_move_;
+  if (target_distance < 0)
+    target_distance = 0.0;
+
+  double fb_goal = fmin(target_distance * 0.1, MAX_FB_STEP);
+  accum_period_time_ += delta_time;
+  if (accum_period_time_ > (curr_period_time_  / 4))
+  {
+    accum_period_time_ = 0.0;
+    if ((target_distance * 0.1 / 2) < current_x_move_)
+      next_movement -= UNIT_FB_STEP;
+    else
+      next_movement += UNIT_FB_STEP;
+  }
+  fb_goal = fmin(next_movement, fb_goal);
+  fb_move = fmax(fb_goal, MIN_FB_STEP);
+  ROS_INFO_COND(DEBUG_PRINT, "distance to ball : %6.4f, fb : %6.4f, delta : %6.6f", target_distance, fb_move,
+                delta_time);
+  ROS_INFO_COND(DEBUG_PRINT, "==============================================");
+
+  // calc rl angle
+  double rl_goal = 0.0;
+  if (fabs(target_angle) * 180 / M_PI > 5.0)
+  {
+    double rl_offset = fabs(target_angle) * 0.2;
+    rl_goal = fmin(rl_offset, MAX_RL_TURN);
+    rl_goal = fmax(rl_goal, MIN_RL_TURN);
+    rl_angle = fmin(fabs(current_r_angle_) + UNIT_RL_TURN, rl_goal);
+
+    if (target_angle < 0)
+      rl_angle *= (-1);
+  }
+}
+
 // x_angle : ball position (pan), y_angle : ball position (tilt)
 bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_size)
 {
@@ -169,7 +207,6 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
 
   approach_ball_position_ = NotFound;
 
-  // clac fb
   double distance_to_ball = CAMERA_HEIGHT * tan(M_PI * 0.5 + current_tilt_ - hip_pitch_offset_ - ball_size);
 
   double ball_y_angle = (current_tilt_ + y_angle) * 180 / M_PI;
@@ -178,8 +215,8 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
   if (distance_to_ball < 0)
     distance_to_ball *= (-1);
 
-  double fb_goal, fb_move;
-  double distance_to_kick = 0.25;
+  //double distance_to_kick = 0.25;
+  double distance_to_kick = 0.22;
 
   // check whether ball is correct position.
   if ((distance_to_ball < distance_to_kick) && (fabs(ball_x_angle) < 25.0))
@@ -232,48 +269,16 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
     accum_ball_position_ = 0;
   }
 
-  double next_movement = current_x_move_;
+  double fb_move = 0.0, rl_angle = 0.0;
   double distance_to_walk = distance_to_ball - distance_to_kick;
-  if(distance_to_walk < 0)
-    distance_to_walk = 0.0;
 
-  fb_goal = fmin(distance_to_walk * 0.1, MAX_FB_STEP);
-
-  accum_period_time_ += delta_time;
-  if (accum_period_time_ > (curr_period_time_ * 0.25))
-  {
-    accum_period_time_ = 0.0;
-    if ((distance_to_walk * 0.1 / 2) < current_x_move_)
-      next_movement -= UNIT_FB_STEP;
-    else
-      next_movement += UNIT_FB_STEP;
-  }
-
-  fb_goal = fmin(next_movement, fb_goal);
-  fb_move = fmax(fb_goal, MIN_FB_STEP);
-
-  ROS_INFO_COND(DEBUG_PRINT, "distance to ball : %6.4f, fb : %6.4f, delta : %6.6f", distance_to_ball, fb_move,
-                delta_time);
-  ROS_INFO_COND(DEBUG_PRINT, "==============================================");
-
-  // calc rl angle
-  double rl_goal = 0.0, rl_angle = 0.0;
-  if (fabs(current_pan_) * 180 / M_PI > 5.0)
-  {
-    double rl_offset = fabs(current_pan_) * 0.2;
-    rl_goal = fmin(rl_offset, MAX_RL_TURN);
-    rl_goal = fmax(rl_goal, MIN_RL_TURN);
-    rl_angle = fmin(fabs(current_r_angle_) + UNIT_RL_TURN, rl_goal);
-
-    if (current_pan_ < 0)
-      rl_angle *= (-1);
-  }
+  calcFootstep(distance_to_walk, current_pan_, delta_time, fb_move, rl_angle);
 
   // send message
   setWalkingParam(fb_move, 0, rl_angle);
 
   // for debug
-  ROS_INFO("distance to ball : %6.4f, fb : %6.4f, delta : %6.6f", distance_to_ball, fb_move, delta_time);
+  //ROS_INFO("distance to ball : %6.4f, fb : %6.4f, delta : %6.6f", distance_to_ball, fb_move, delta_time);
 
   return false;
 }

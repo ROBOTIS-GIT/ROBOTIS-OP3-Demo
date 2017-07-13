@@ -189,6 +189,9 @@ int main(int argc, char **argv)
 
 void buttonHandlerCallback(const std_msgs::String::ConstPtr& msg)
 {
+  if(apply_desired == true)
+    return;
+
   // in the middle of playing demo
   if (current_status != Ready)
   {

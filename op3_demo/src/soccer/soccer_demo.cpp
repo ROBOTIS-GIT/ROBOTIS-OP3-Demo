@@ -61,6 +61,8 @@ SoccerDemo::SoccerDemo()
 
   boost::thread queue_thread = boost::thread(boost::bind(&SoccerDemo::callbackThread, this));
   boost::thread process_thread = boost::thread(boost::bind(&SoccerDemo::processThread, this));
+
+  is_grass_ = nh.param<bool>("grass_demo", false);
 }
 
 SoccerDemo::~SoccerDemo()
@@ -103,11 +105,15 @@ void SoccerDemo::process()
   if (start_following_ == true)
   {
     ball_tracker_.startTracking();
+    // for debug
     ball_follower_.startFollowing();
     start_following_ = false;
 
     wait_count_ = 1 * SPIN_RATE;
   }
+
+  //for debug
+  //return;
 
   // check to stop
   if (stop_following_ == true)
@@ -432,12 +438,12 @@ void SoccerDemo::handleKick(int ball_position)
   {
     case robotis_op::BallFollower::OnRight:
       std::cout << "Kick Motion [R]: " << ball_position << std::endl;
-      playMotion(RightKick);
+      playMotion(is_grass_ ? RightKick + ForGrass : RightKick);
       break;
 
     case robotis_op::BallFollower::OnLeft:
       std::cout << "Kick Motion [L]: " << ball_position << std::endl;
-      playMotion(LeftKick);
+      playMotion(is_grass_ ? LeftKick + ForGrass : LeftKick);
       break;
 
     default:
@@ -473,12 +479,12 @@ bool SoccerDemo::handleFallen(int fallen_status)
   {
     case Fallen_Forward:
       std::cout << "Getup Motion [F]: " << std::endl;
-      playMotion(GetUpFront);
+      playMotion(is_grass_ ? GetUpFront + ForGrass : GetUpFront);
       break;
 
     case Fallen_Behind:
       std::cout << "Getup Motion [B]: " << std::endl;
-      playMotion(GetUpBack);
+      playMotion(is_grass_ ? GetUpBack + ForGrass : GetUpBack);
       break;
 
     default:

@@ -2,7 +2,7 @@
 <!-- Launches an UVC camera, the ball detector and its visualization  -->
 <launch>    
 
-    <!-- op3 manager -->
+    <!-- robotis op3 manager -->
     <include file="$(find op3_manager)/launch/op3_manager.launch"/> 
 
     <!-- Camera and Ball detector -->
@@ -17,7 +17,7 @@
     <!-- sound player -->
     <node pkg="ros_madplay_player" type="ros_madplay_player" name="ros_madplay_player" output="screen"/>
     
-    <!-- op3 demo -->
+    <!-- robotis op3 self test demo -->
     <node pkg="op3_demo" type="self_test_node" name="op3_self_test" output="screen"/>
 </launch>
 

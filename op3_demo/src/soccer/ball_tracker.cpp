@@ -101,6 +101,10 @@ void BallTracker::stopTracking()
 {
   on_tracking_ = false;
   ROS_INFO_COND(DEBUG_PRINT, "Stop Ball tracking");
+
+  double x_error = -atan(ball_position_.x * tan(FOV_WIDTH));
+  double y_error = -atan(ball_position_.y * tan(FOV_HEIGHT));
+  publishHeadJoint(x_error, y_error);
 }
 
 void BallTracker::setUsingHeadScan(bool use_scan)
@@ -150,7 +154,8 @@ bool BallTracker::processTracking()
   double delta_time = dur.nsec * 0.000000001 + dur.sec;
   prev_time_ = curr_time;
 
-  double p_gain = 0.7, d_gain = 0.02;
+  // double p_gain = 0.75, d_gain = 0.05;
+  double p_gain = 0.7, d_gain = 0.05;
   double x_error_diff = (x_error - current_ball_pan_) / delta_time;
   double y_error_diff = (y_error - current_ball_tilt_) / delta_time;
   double x_error_target = x_error * p_gain + x_error_diff * d_gain;

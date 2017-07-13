@@ -48,6 +48,7 @@ class OPDemo
     RightKick = 121,
     LeftKick = 120,
     Ceremony = 85,
+    ForGrass = 20,
   };
 
   OPDemo()
