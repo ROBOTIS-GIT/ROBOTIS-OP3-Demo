@@ -42,6 +42,8 @@
 #include "op3_demo/ball_tracker.h"
 #include "op3_demo/ball_follower.h"
 #include "robotis_math/robotis_linear_algebra.h"
+#include "op3_action_module_msgs/IsRunning.h"
+#include "robotis_controller_msgs/SyncWriteItem.h"
 
 namespace robotis_op
 {
@@ -99,26 +101,33 @@ class SoccerDemo : public OPDemo
   bool handleFallen(int fallen_status);
 
   void playMotion(int motion_index);
+  void setRGBLED(int blue, int green, int red);
+  bool isActionRunning();
 
   BallTracker ball_tracker_;
   BallFollower ball_follower_;
 
   ros::Publisher module_control_pub_;
   ros::Publisher motion_index_pub_;
+  ros::Publisher rgb_led_pub_;
   ros::Subscriber buttuon_sub_;
   ros::Subscriber demo_command_sub_;
   ros::Subscriber imu_data_sub_;
+
+  ros::ServiceClient is_running_client_;
+
   std::map<int, std::string> id_joint_table_;
   std::map<std::string, int> joint_id_table_;
 
   bool is_grass_;
   int wait_count_;
-  bool on_following_ball_;
+    bool on_following_ball_;
   bool restart_soccer_;
   bool start_following_;
   bool stop_following_;
   bool stop_fallen_check_;
   int robot_status_;
+  int tracking_status_;
   int stand_state_;
   double present_pitch_;
 };

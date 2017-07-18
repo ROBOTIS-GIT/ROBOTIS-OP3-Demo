@@ -86,16 +86,10 @@ void VisionDemo::setDemoDisable()
 
 void VisionDemo::process()
 {
-  //bool is_tracked = face_tracker_.processTracking();
   int tracking_status = face_tracker_.processTracking();
 
-  //if(is_tracking_ != is_tracked)
   if(tracking_status_ != tracking_status)
   {
-//    if(is_tracked == true)
-//      setRGBLED(0x1F, 0, 0);
-//    else
-//      setRGBLED(0x1F, 0x1F, 0);
     switch(tracking_status)
     {
       case FaceTracker::Found:

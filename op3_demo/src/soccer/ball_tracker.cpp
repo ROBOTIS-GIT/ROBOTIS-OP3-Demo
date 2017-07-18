@@ -40,12 +40,14 @@ BallTracker::BallTracker()
       FOV_WIDTH(26.4 * M_PI / 180),
       FOV_HEIGHT(21.6 * M_PI / 180),
       NOT_FOUND_THRESHOLD(50),
+      WAITING_THRESHOLD(5),
       use_head_scan_(true),
       count_not_found_(0),
       on_tracking_(false),
       current_ball_pan_(0),
       current_ball_tilt_(0),
       current_ball_bottom_(0),
+      tracking_status_(NotFound),
       DEBUG_PRINT(false)
 {
   head_joint_pub_ = nh_.advertise<sensor_msgs::JointState>("/robotis/head_control/set_joint_states_offset", 0);
@@ -112,13 +114,15 @@ void BallTracker::setUsingHeadScan(bool use_scan)
   use_head_scan_ = use_scan;
 }
 
-bool BallTracker::processTracking()
+int BallTracker::processTracking()
 {
+  int tracking_status = Found;
+
   if (on_tracking_ == false)
   {
     ball_position_.z = 0;
     count_not_found_ = 0;
-    return false;
+    return NotFound;
   }
 
   // check ball position
@@ -126,24 +130,56 @@ bool BallTracker::processTracking()
   {
     count_not_found_++;
 
-    if (count_not_found_ > NOT_FOUND_THRESHOLD)
+    if (count_not_found_ < WAITING_THRESHOLD)
+    {
+      if(tracking_status_ == Found || tracking_status_ == Waiting)
+        tracking_status = Waiting;
+      else
+        tracking_status = NotFound;
+    }
+    else if (count_not_found_ > NOT_FOUND_THRESHOLD)
     {
       scanBall();
       count_not_found_ = 0;
+      tracking_status = NotFound;
     }
-
-    return false;
+    else
+    {
+      tracking_status = NotFound;
+    }
+  }
+  else
+  {
+    count_not_found_ = 0;
   }
 
   // if ball is found
   // convert ball position to desired angle(rad) of head
   // ball_position : top-left is (-1, -1), bottom-right is (+1, +1)
   // offset_rad : top-left(+, +), bottom-right(-, -)
-  double x_error = -atan(ball_position_.x * tan(FOV_WIDTH));
-  double y_error = -atan(ball_position_.y * tan(FOV_HEIGHT));
+  double x_error = 0.0, y_error = 0.0, ball_size = 0.0;
 
-  ball_position_.z = 0;
-  count_not_found_ = 0;
+  switch (tracking_status)
+  {
+    case NotFound:
+      tracking_status_ = tracking_status;
+      return tracking_status;
+
+    case Waiting:
+      x_error = current_ball_pan_ * 0.7;
+      y_error = current_ball_tilt_ * 0.7;
+      ball_size = current_ball_bottom_;
+      break;
+
+    case Found:
+      x_error = -atan(ball_position_.x * tan(FOV_WIDTH));
+      y_error = -atan(ball_position_.y * tan(FOV_HEIGHT));
+      ball_size = ball_position_.z;
+      break;
+
+    default:
+      break;
+  }
 
   ROS_INFO_STREAM_COND(DEBUG_PRINT, "--------------------------------------------------------------");
   ROS_INFO_STREAM_COND(DEBUG_PRINT, "Ball position : " << ball_position_.x << " | " << ball_position_.y);
@@ -154,19 +190,20 @@ bool BallTracker::processTracking()
   double delta_time = dur.nsec * 0.000000001 + dur.sec;
   prev_time_ = curr_time;
 
-  // double p_gain = 0.75, d_gain = 0.05;
-  double p_gain = 0.7, d_gain = 0.05;
+  // double p_gain = 0.7, d_gain = 0.05;
+  double p_gain = 0.75, d_gain = 0.04;
   double x_error_diff = (x_error - current_ball_pan_) / delta_time;
   double y_error_diff = (y_error - current_ball_tilt_) / delta_time;
   double x_error_target = x_error * p_gain + x_error_diff * d_gain;
   double y_error_target = y_error * p_gain + y_error_diff * d_gain;
 
-
   ROS_INFO_STREAM_COND(DEBUG_PRINT, "--------------------------------------------------------------");
   ROS_INFO_STREAM_COND(DEBUG_PRINT, "error         : " << (x_error * 180 / M_PI) << " | " << (y_error * 180 / M_PI));
-  ROS_INFO_STREAM_COND(DEBUG_PRINT,
+  ROS_INFO_STREAM_COND(
+      DEBUG_PRINT,
       "error_diff    : " << (x_error_diff * 180 / M_PI) << " | " << (y_error_diff * 180 / M_PI) << " | " << delta_time);
-  ROS_INFO_STREAM_COND(DEBUG_PRINT,
+  ROS_INFO_STREAM_COND(
+      DEBUG_PRINT,
       "error_target  : " << (x_error_target * 180 / M_PI) << " | " << (y_error_target * 180 / M_PI) << " | P : " << p_gain << " | D : " << d_gain);
 
   // move head joint
@@ -175,9 +212,13 @@ bool BallTracker::processTracking()
   // args for following ball
   current_ball_pan_ = x_error;
   current_ball_tilt_ = y_error;
-  current_ball_bottom_ = -atan(ball_position_.z * tan(FOV_HEIGHT));
+  current_ball_bottom_ = ball_size;
 
-  return true;
+  ball_position_.z = 0;
+  //count_not_found_ = 0;
+
+  tracking_status_ = tracking_status;
+  return tracking_status;
 }
 
 void BallTracker::publishHeadJoint(double pan, double tilt)

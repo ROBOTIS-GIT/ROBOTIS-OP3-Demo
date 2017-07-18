@@ -48,6 +48,7 @@ SoccerDemo::SoccerDemo()
       stop_fallen_check_(false),
       robot_status_(Waited),
       stand_state_(Stand),
+      tracking_status_(BallTracker::Waiting),
       present_pitch_(0)
 {
   //init ros
@@ -92,14 +93,17 @@ void SoccerDemo::setDemoDisable()
   start_following_ = false;
   stop_following_ = false;
   stop_fallen_check_ = false;
+
+  tracking_status_ = BallTracker::Waiting;
 }
 
 void SoccerDemo::process()
 {
   // ball tracking
   bool is_tracked;
+  int tracking_status;
 
-  is_tracked = ball_tracker_.processTracking();
+  tracking_status = ball_tracker_.processTracking();
 
   // check to start
   if (start_following_ == true)
@@ -130,10 +134,26 @@ void SoccerDemo::process()
     // ball following
     if (on_following_ball_ == true)
     {
-      if (is_tracked)
-        ball_follower_.processFollowing(ball_tracker_.getPanOfBall(), ball_tracker_.getTiltOfBall(), ball_tracker_.getBallSize());
-      else
-        ball_follower_.waitFollowing();
+      switch(tracking_status)
+      {
+        case BallTracker::Found:
+          ball_follower_.processFollowing(ball_tracker_.getPanOfBall(), ball_tracker_.getTiltOfBall(), 0.0);
+          if(tracking_status_ != tracking_status)
+            setRGBLED(0x1F, 0x1F, 0x1F);
+          break;
+
+        case BallTracker::NotFound:
+          ball_follower_.waitFollowing();
+          if(tracking_status_ != tracking_status)
+            setRGBLED(0, 0, 0);
+          break;
+
+        default:
+          break;
+      }
+
+      if(tracking_status != tracking_status_)
+        tracking_status_ = tracking_status;
     }
 
     // check fallen states
@@ -171,7 +191,6 @@ void SoccerDemo::process()
   {
     wait_count_ -= 1;
   }
-
 }
 
 void SoccerDemo::processThread()
@@ -201,10 +220,13 @@ void SoccerDemo::callbackThread()
   // subscriber & publisher
   module_control_pub_ = nh.advertise<robotis_controller_msgs::JointCtrlModule>("/robotis/set_joint_ctrl_modules", 0);
   motion_index_pub_ = nh.advertise<std_msgs::Int32>("/robotis/action/page_num", 0);
+  rgb_led_pub_ = nh.advertise<robotis_controller_msgs::SyncWriteItem>("/robotis/sync_write_item", 0);
 
   buttuon_sub_ = nh.subscribe("/robotis/open_cr/button", 1, &SoccerDemo::buttonHandlerCallback, this);
   demo_command_sub_ = nh.subscribe("/ball_tracker/command", 1, &SoccerDemo::demoCommandCallback, this);
   imu_data_sub_ = nh.subscribe("/robotis/open_cr/imu", 1, &SoccerDemo::imuDataCallback, this);
+
+  is_running_client_ = nh.serviceClient<op3_action_module_msgs::IsRunning>("/robotis/action/is_running");
 
   while (nh.ok())
   {
@@ -405,6 +427,14 @@ void SoccerDemo::imuDataCallback(const sensor_msgs::Imu::ConstPtr& msg)
 
 void SoccerDemo::startSoccerMode()
 {
+  setModuleToDemo("action_module");
+
+  usleep(10 * 1000);
+
+  playMotion(WalkingReady);
+
+  usleep(1500 * 1000);
+
   setBodyModuleToDemo("walking_module");
 
   usleep(10 * 1000);
@@ -491,7 +521,10 @@ bool SoccerDemo::handleFallen(int fallen_status)
       break;
   }
 
-  usleep(500 * 1000);
+  while(isActionRunning() == true)
+    usleep(100 * 1000);
+
+  usleep(650 * 1000);
 
   if (on_following_ball_ == true)
     restart_soccer_ = true;
@@ -508,6 +541,39 @@ void SoccerDemo::playMotion(int motion_index)
   motion_msg.data = motion_index;
 
   motion_index_pub_.publish(motion_msg);
+}
+
+void SoccerDemo::setRGBLED(int blue, int green, int red)
+{
+  int led_full_unit = 0x1F;
+  int led_value = (blue & led_full_unit) << 10 | (green & led_full_unit) << 5 | (red & led_full_unit);
+  robotis_controller_msgs::SyncWriteItem syncwrite_msg;
+  syncwrite_msg.item_name = "LED_RGB";
+  syncwrite_msg.joint_name.push_back("open-cr");
+  syncwrite_msg.value.push_back(led_value);
+
+  rgb_led_pub_.publish(syncwrite_msg);
+}
+
+// check running of action
+bool SoccerDemo::isActionRunning()
+{
+  op3_action_module_msgs::IsRunning is_running_srv;
+
+  if (is_running_client_.call(is_running_srv) == false)
+  {
+    ROS_ERROR("Failed to get action status");
+    return true;
+  }
+  else
+  {
+    if (is_running_srv.response.is_running == true)
+    {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }

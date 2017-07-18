@@ -46,9 +46,9 @@ BallFollower::BallFollower()
       kick_motion_index_(83),
       CAMERA_HEIGHT(0.46),
       NOT_FOUND_THRESHOLD(50),
-      MAX_FB_STEP(35.0 * 0.001),
+      MAX_FB_STEP(40.0 * 0.001),
       MAX_RL_TURN(15.0 * M_PI / 180),
-      MIN_FB_STEP(5.0 * 0.001),
+      MIN_FB_STEP(0.0 * 0.001),
       MIN_RL_TURN(5.0 * M_PI / 180),
       UNIT_FB_STEP(1.0 * 0.001),
       UNIT_RL_TURN(0.5 * M_PI / 180),
@@ -177,7 +177,7 @@ void BallFollower::calcFootstep(double target_distance, double target_angle, dou
   }
 }
 
-// x_angle : ball position (pan), y_angle : ball position (tilt)
+// x_angle : ball position (pan), y_angle : ball position (tilt), ball_size : angle of ball radius
 bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_size)
 {
   ros::Time curr_time = ros::Time::now();

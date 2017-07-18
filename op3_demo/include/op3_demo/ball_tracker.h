@@ -54,10 +54,17 @@ namespace robotis_op
 class BallTracker
 {
  public:
+  enum TrackingStatus
+  {
+    NotFound = -1,
+    Waiting = 0,
+    Found = 1,
+
+  };
   BallTracker();
   ~BallTracker();
 
-  bool processTracking();
+  int processTracking();
 
   void startTracking();
   void stopTracking();
@@ -83,6 +90,7 @@ class BallTracker
   const double FOV_WIDTH;
   const double FOV_HEIGHT;
   const int NOT_FOUND_THRESHOLD;
+  const int WAITING_THRESHOLD;
   const bool DEBUG_PRINT;
 
   void ballPositionCallback(const ball_detector::circleSetStamped::ConstPtr &msg);
@@ -107,6 +115,7 @@ class BallTracker
   // z is the ball radius
   geometry_msgs::Point ball_position_;
 
+  int tracking_status_;
   bool use_head_scan_;
   int count_not_found_;
   bool on_tracking_;
