@@ -95,7 +95,8 @@ class BallFollower
   void setWalkingCommand(const std::string &command);
   void setWalkingParam(double x_move, double y_move, double rotation_angle, bool balance = true);
   bool getWalkingParam();
-
+  void calcFootstep(double target_distance, double target_angle, double delta_time,
+                    double& fb_move, double& rl_angle);
 
   //ros node handle
   ros::NodeHandle nh_;
@@ -129,6 +130,9 @@ class BallFollower
   int kick_motion_index_;
   double hip_pitch_offset_;
   ros::Time prev_time_;
+
+  double curr_period_time_;
+  double accum_period_time_;
 
 };
 }

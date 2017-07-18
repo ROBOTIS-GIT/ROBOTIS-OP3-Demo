@@ -45,31 +45,6 @@ include_directories(
   ${Eigen_INCLUDE_DIRS}
 )
 
-add_executable(ball_tracker_node 
-  src/ball_tracker_node.cpp
-  src/soccer/ball_tracker.cpp
-)
-
-add_dependencies(ball_tracker_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-target_link_libraries(ball_tracker_node
-  ${catkin_LIBRARIES}
-  yaml-cpp
-)
-
-add_executable(soccer_demo_node 
-  src/soccer_demo_node.cpp
-  src/soccer/ball_tracker.cpp
-  src/soccer/ball_follower.cpp
-)
-
-add_dependencies(soccer_demo_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-target_link_libraries(soccer_demo_node
-  ${catkin_LIBRARIES}
-  yaml-cpp
-)
-
 add_executable(op_demo_node 
   src/demo_node.cpp
   src/soccer/soccer_demo.cpp

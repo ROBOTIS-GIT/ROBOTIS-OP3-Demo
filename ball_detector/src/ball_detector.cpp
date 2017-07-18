@@ -39,12 +39,12 @@ namespace robotis_op
 {
 
 BallDetector::BallDetector()
-: nh_(ros::this_node::getName()),
-  it_(this->nh_),
-  enable_(true),
-  params_config_(),
-  init_param_(false),
-  not_found_count_(0)
+    : nh_(ros::this_node::getName()),
+      it_(this->nh_),
+      enable_(true),
+      params_config_(),
+      init_param_(false),
+      not_found_count_(0)
 {
   has_path_ = nh_.getParam("yaml_path", param_path_);
 
@@ -127,7 +127,7 @@ bool BallDetector::newImage()
 
 void BallDetector::process()
 {
-  if(enable_ == false)
+  if (enable_ == false)
     return;
 
   if (cv_img_ptr_sub_ != NULL)
@@ -145,7 +145,7 @@ void BallDetector::process()
 
 void BallDetector::publishImage()
 {
-  if(enable_ == false)
+  if (enable_ == false)
     return;
 
   //image_raw topic
@@ -171,7 +171,7 @@ void BallDetector::publishImage()
 
 void BallDetector::publishCircles()
 {
-  if(enable_ == false)
+  if (enable_ == false)
     return;
 
   if (circles_.size() == 0)
@@ -198,10 +198,6 @@ void BallDetector::publishCircles()
 
   //publish message
   circles_pub_.publish(circles_msg_);
-
-  //ball_detecting process time
-  //ros::Duration _process_dur = ros::Time::now() - sub_time_;
-  //ROS_INFO_STREAM("== Ball detecting processing time : " << _process_dur);
 }
 
 void BallDetector::enableCallback(const std_msgs::Bool::ConstPtr &msg)
@@ -211,7 +207,7 @@ void BallDetector::enableCallback(const std_msgs::Bool::ConstPtr &msg)
 
 void BallDetector::imageCallback(const sensor_msgs::ImageConstPtr & msg)
 {
-  if(enable_ == false)
+  if (enable_ == false)
     return;
 
   try
@@ -272,7 +268,7 @@ void BallDetector::dynParamCallback(ball_detector::detectorParamsConfig &config,
 
 void BallDetector::cameraInfoCallback(const sensor_msgs::CameraInfo & msg)
 {
-  if(enable_ == false)
+  if (enable_ == false)
     return;
 
   camera_info_msg_ = msg;
@@ -284,27 +280,27 @@ void BallDetector::printConfig()
     return;
 
   std::cout << "Detetctor Configuration:" << std::endl << "    gaussian_blur_size: "
-      << params_config_.gaussian_blur_size << std::endl << "    gaussian_blur_sigma: "
-      << params_config_.gaussian_blur_sigma << std::endl << "    canny_edge_th: " << params_config_.canny_edge_th
-      << std::endl << "    hough_accum_resolution: " << params_config_.hough_accum_resolution << std::endl
-      << "    min_circle_dist: " << params_config_.min_circle_dist << std::endl << "    hough_accum_th: "
-      << params_config_.hough_accum_th << std::endl << "    min_radius: " << params_config_.min_radius
-      << std::endl << "    max_radius: " << params_config_.max_radius << std::endl << "    filter_h_min: "
-      << params_config_.filter_threshold.h_min << std::endl << "    filter_h_max: "
-      << params_config_.filter_threshold.h_max << std::endl << "    filter_s_min: "
-      << params_config_.filter_threshold.s_min << std::endl << "    filter_s_max: "
-      << params_config_.filter_threshold.s_max << std::endl << "    filter_v_min: "
-      << params_config_.filter_threshold.v_min << std::endl << "    filter_v_max: "
-      << params_config_.filter_threshold.v_max << std::endl << "    use_second_filter: "
-      << params_config_.use_second_filter << std::endl << "    filter2_h_min: "
-      << params_config_.filter2_threshold.h_min << std::endl << "    filter2_h_max: "
-      << params_config_.filter2_threshold.h_max << std::endl << "    filter2_s_min: "
-      << params_config_.filter2_threshold.s_min << std::endl << "    filter2_s_max: "
-      << params_config_.filter2_threshold.s_max << std::endl << "    filter2_v_min: "
-      << params_config_.filter2_threshold.v_min << std::endl << "    filter2_v_max: "
-      << params_config_.filter2_threshold.v_max << std::endl << "    ellipse_size: "
-      << params_config_.ellipse_size << std::endl << "    filter_image_to_debug: " << params_config_.debug
-      << std::endl << std::endl;
+            << params_config_.gaussian_blur_size << std::endl << "    gaussian_blur_sigma: "
+            << params_config_.gaussian_blur_sigma << std::endl << "    canny_edge_th: " << params_config_.canny_edge_th
+            << std::endl << "    hough_accum_resolution: " << params_config_.hough_accum_resolution << std::endl
+            << "    min_circle_dist: " << params_config_.min_circle_dist << std::endl << "    hough_accum_th: "
+            << params_config_.hough_accum_th << std::endl << "    min_radius: " << params_config_.min_radius
+            << std::endl << "    max_radius: " << params_config_.max_radius << std::endl << "    filter_h_min: "
+            << params_config_.filter_threshold.h_min << std::endl << "    filter_h_max: "
+            << params_config_.filter_threshold.h_max << std::endl << "    filter_s_min: "
+            << params_config_.filter_threshold.s_min << std::endl << "    filter_s_max: "
+            << params_config_.filter_threshold.s_max << std::endl << "    filter_v_min: "
+            << params_config_.filter_threshold.v_min << std::endl << "    filter_v_max: "
+            << params_config_.filter_threshold.v_max << std::endl << "    use_second_filter: "
+            << params_config_.use_second_filter << std::endl << "    filter2_h_min: "
+            << params_config_.filter2_threshold.h_min << std::endl << "    filter2_h_max: "
+            << params_config_.filter2_threshold.h_max << std::endl << "    filter2_s_min: "
+            << params_config_.filter2_threshold.s_min << std::endl << "    filter2_s_max: "
+            << params_config_.filter2_threshold.s_max << std::endl << "    filter2_v_min: "
+            << params_config_.filter2_threshold.v_min << std::endl << "    filter2_v_max: "
+            << params_config_.filter2_threshold.v_max << std::endl << "    ellipse_size: "
+            << params_config_.ellipse_size << std::endl << "    filter_image_to_debug: " << params_config_.debug
+            << std::endl << std::endl;
 }
 
 void BallDetector::saveConfig()
@@ -364,23 +360,6 @@ void BallDetector::filterImage()
   if (!in_image_.data)
     return;
 
-  /*
-   cv::Mat imgCrCb, imgCr;
-   cv::cvtColor(in_image_, imgCrCb, cv::COLOR_BGR2YCrCb);
-   std::vector<cv::Mat> _channels;
-   cv::split(imgCrCb, _channels);
-   imgCr = _channels[2];
-
-   cv::inRange(imgCr, params_config_.filter_h_min, params_config_.filter_h_max, imgCr);
-   cv::erode(imgCr, imgCr, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)) );
-   cv::dilate(imgCr, imgCr, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)) );
-
-   cv::dilate(imgCr, imgCr, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)) );
-   cv::erode(imgCr, imgCr, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)) );
-
-   cv::cvtColor(imgCr, in_image_, cv::COLOR_GRAY2RGB);
-   */
-
   cv::Mat img_hsv, img_filtered;
   cv::cvtColor(in_image_, img_hsv, cv::COLOR_RGB2HSV);
 
@@ -394,23 +373,12 @@ void BallDetector::filterImage()
     // mask
     cv::Mat img_mask;
 
-    // mophology : open and close
-    //int ellipse_size = 30;
-    //int dilate_size = params_config_.max_radius;  // dilate_size = ellipse_size * 10
-    //cv::erode(img_filtered, img_mask, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(ellipse_size, ellipse_size)));
-    //cv::dilate(img_mask, img_mask,
-    //               cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(dilate_size, dilate_size)));
-
-    //makeFilterMask(img_filtered, img_mask, ellipse_size);
-
     // check hsv range
     cv::Mat img_filtered2;
     inRangeHsv(img_hsv, params_config_.filter2_threshold, img_filtered2);
 
     makeFilterMaskFromBall(img_filtered, img_mask);
     cv::bitwise_and(img_filtered2, img_mask, img_filtered2);
-
-    // mophology(img_filtered2, img_filtered2, params_config_.ellipse_size);
 
     // or
     cv::bitwise_or(img_filtered, img_filtered2, img_filtered);
@@ -437,7 +405,7 @@ void BallDetector::makeFilterMask(const cv::Mat &source_img, cv::Mat &mask_img, 
   {
     for (int j = 0; j < source_width; j++)
     {
-      uint8_t pixel = source_img.at<uint8_t>(i, j);
+      uint8_t pixel = source_img.at < uint8_t > (i, j);
 
       if (pixel == 0)
         continue;
@@ -452,7 +420,7 @@ void BallDetector::makeFilterMask(const cv::Mat &source_img, cv::Mat &mask_img, 
           if (mask_j < 0 || mask_j >= source_width)
             continue;
 
-          mask_img.at<uchar>(mask_i, mask_j, 0) = 255;
+          mask_img.at < uchar > (mask_i, mask_j, 0) = 255;
         }
       }
     }
@@ -464,51 +432,22 @@ void BallDetector::makeFilterMaskFromBall(const cv::Mat &source_img, cv::Mat &ma
   // source_img.
   mask_img = cv::Mat::zeros(source_img.rows, source_img.cols, CV_8UC1);
 
-  if(circles_.size() == 0)
+  if (circles_.size() == 0)
     return;
 
   // channel : 1
   if (source_img.channels() != 1)
     return;
 
-  //  for (int i = 0; i < circles_.size(); i++)
-  //  {
-  //    if (circles_[i][0] != -1)
-  //    {
-  //      // _center = cv::Point(cvRound(circles_[_i][0]), cvRound(circles_[_i][1]));
-  //      int center_x = cvRound(circles_[i][0]);
-  //      int center_y = cvRound(circles_[i][1]);
-  //      int radius = cvRound(circles_[i][2]) * 1.5;
-  //
-  //      for (int mask_i = center_y - radius; mask_i <= center_y + radius; mask_i++)
-  //      {
-  //        if (mask_i < 0 || mask_i >= source_img.rows)
-  //          continue;
-  //
-  //        int mask_offset = abs(mask_i - center_y) * 0.5;
-  //
-  //        for (int mask_j = center_x - radius + mask_offset; mask_j <= center_x + radius - mask_offset; mask_j++)
-  //        {
-  //          if (mask_j < 0 || mask_j >= source_img.cols)
-  //            continue;
-  //
-  //          mask_img.at<uchar>(mask_i, mask_j, 0) = 255;
-  //        }
-  //      }
-  //
-  //    }
-  //  }
-
   cv::Mat img_labels, stats, centroids;
-  int numOfLables = cv::connectedComponentsWithStats(source_img, img_labels,
-                                                     stats, centroids, 8,CV_32S);
+  int numOfLables = cv::connectedComponentsWithStats(source_img, img_labels, stats, centroids, 8, CV_32S);
   for (int j = 1; j < numOfLables; j++)
   {
     int area = stats.at<int>(j, cv::CC_STAT_AREA);
     int left = stats.at<int>(j, cv::CC_STAT_LEFT);
-    int top  = stats.at<int>(j, cv::CC_STAT_TOP);
+    int top = stats.at<int>(j, cv::CC_STAT_TOP);
     int width = stats.at<int>(j, cv::CC_STAT_WIDTH);
-    int height  = stats.at<int>(j, cv::CC_STAT_HEIGHT);
+    int height = stats.at<int>(j, cv::CC_STAT_HEIGHT);
 
     int center_x = left + width * 0.5;
     int center_y = top + height * 0.5;
@@ -526,7 +465,7 @@ void BallDetector::makeFilterMaskFromBall(const cv::Mat &source_img, cv::Mat &ma
         if (mask_j < 0 || mask_j >= source_img.cols)
           continue;
 
-        mask_img.at<uchar>(mask_i, mask_j, 0) = 255;
+        mask_img.at < uchar > (mask_i, mask_j, 0) = 255;
       }
     }
   }
@@ -588,40 +527,31 @@ void BallDetector::houghDetection(const unsigned int imgEncoding)
     cv::cvtColor(in_image_, gray_image, CV_RGB2GRAY);
 
   //Reduce the noise so we avoid false circle detection
-  cv::GaussianBlur(gray_image, gray_image, cv::Size(params_config_.gaussian_blur_size, params_config_.gaussian_blur_size),
+  cv::GaussianBlur(gray_image, gray_image,
+                   cv::Size(params_config_.gaussian_blur_size, params_config_.gaussian_blur_size),
                    params_config_.gaussian_blur_sigma);
 
-  //double hough_accum_th = (not_found_count_ < NOT_FOUND_TH) ?
-  //    params_config_.hough_accum_th : params_config_.hough_accum_th * 0.5;
   double hough_accum_th = params_config_.hough_accum_th;
 
-  // std::cout << "Not found : " << not_found_count_ << ", value : " << hough_accum_th << std::endl;
 
   //Apply the Hough Transform to find the circles
   cv::HoughCircles(gray_image, circles_current, CV_HOUGH_GRADIENT, params_config_.hough_accum_resolution,
                    params_config_.min_circle_dist, params_config_.canny_edge_th, hough_accum_th,
                    params_config_.min_radius, params_config_.max_radius);
 
-  //set found circles to circles set. Apply some condition if desired.
-  //for (int ii = 0; ii < circles_current.size(); ii++)
-  //{
-  //  circles_.push_back(circles_current.at(ii));
-  //  // std::cout << "circle " << ii << ": (" << circles.at(ii)[0] << "," << circles.at(ii)[1] << ")" << std::endl;
-  //}
-
-  if(circles_current.size() == 0)
+  if (circles_current.size() == 0)
     not_found_count_ += 1;
   else
     not_found_count_ = 0;
 
   double alpha = 0.2;
 
-  for(int ix = 0; ix < circles_current.size(); ix++)
+  for (int ix = 0; ix < circles_current.size(); ix++)
   {
     cv::Point2d center = cv::Point(circles_current[ix][0], circles_current[ix][1]);
     double radius = circles_current[ix][2];
 
-    for(int prev_ix = 0; prev_ix < prev_circles.size(); prev_ix++)
+    for (int prev_ix = 0; prev_ix < prev_circles.size(); prev_ix++)
     {
       cv::Point2d prev_center = cv::Point(prev_circles[prev_ix][0], prev_circles[prev_ix][1]);
       double prev_radius = prev_circles[prev_ix][2];
@@ -629,13 +559,11 @@ void BallDetector::houghDetection(const unsigned int imgEncoding)
       cv::Point2d diff = center - prev_center;
       double radius_th = std::max(radius, prev_radius) * 0.75;
 
-      if(sqrt(diff.dot(diff)) < radius_th)
+      if (sqrt(diff.dot(diff)) < radius_th)
       {
-        if(abs(radius - prev_radius) < radius_th)
+        if (abs(radius - prev_radius) < radius_th)
         {
-          // std::cout << "circle - raw " << ix << ": (" << circles_current.at(ix)[0] << "," << circles_current.at(ix)[1] << ")" << std::endl;
           circles_current[ix] = circles_current[ix] * alpha + prev_circles[prev_ix] * (1 - alpha);
-          // std::cout << "circle - lpf " << ix << ": (" << circles_current.at(ix)[0] << "," << circles_current.at(ix)[1] << ")" << std::endl;
         }
 
         break;
@@ -659,11 +587,6 @@ void BallDetector::drawOutputImage()
   for (ii = 0; ii < circles_.size(); ii++)
   {
     {
-      // cv::Point _center = cv::Point(cvRound(circles_[ii][0]), cvRound(circles_[ii][1]));
-      // int _radius = cvRound(circles_[ii][2]);
-      // cv::circle( out_image_, _center, 5, cv::Scalar(0,0,255), -1, 8, 0 );// circle center in green
-      // cv::circle( out_image_, _center, _radius, cv::Scalar(0,0,255), 3, 8, 0 );// circle outline in red
-
       int this_radius = cvRound(circles_[ii][2]);
       if (this_radius > radius)
       {
