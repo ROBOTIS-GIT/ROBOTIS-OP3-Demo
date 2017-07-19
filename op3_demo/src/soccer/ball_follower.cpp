@@ -48,7 +48,8 @@ BallFollower::BallFollower()
       NOT_FOUND_THRESHOLD(50),
       MAX_FB_STEP(40.0 * 0.001),
       MAX_RL_TURN(15.0 * M_PI / 180),
-      MIN_FB_STEP(0.0 * 0.001),
+      IN_PLACE_FB_STEP(0.0 * 0.001),
+      MIN_FB_STEP(5.0 * 0.001),
       MIN_RL_TURN(5.0 * M_PI / 180),
       UNIT_FB_STEP(1.0 * 0.001),
       UNIT_RL_TURN(0.5 * M_PI / 180),
@@ -216,7 +217,7 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
     distance_to_ball *= (-1);
 
   //double distance_to_kick = 0.25;
-  double distance_to_kick = 0.22;
+  double distance_to_kick = 0.15;
 
   // check whether ball is correct position.
   if ((distance_to_ball < distance_to_kick) && (fabs(ball_x_angle) < 25.0))
@@ -258,7 +259,7 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
         accum_ball_position_ -= 1;
 
       // send message
-      setWalkingParam(MIN_FB_STEP, 0, 0);
+      setWalkingParam(IN_PLACE_FB_STEP, 0, 0);
 
       return false;
     }
@@ -297,7 +298,7 @@ void BallFollower::setWalkingCommand(const std::string &command)
   if (command == "start")
   {
     getWalkingParam();
-    setWalkingParam(MIN_FB_STEP, 0, 0, true);
+    setWalkingParam(IN_PLACE_FB_STEP, 0, 0, true);
   }
 
   std_msgs::String _command_msg;
