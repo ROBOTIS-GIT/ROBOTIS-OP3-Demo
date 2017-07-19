@@ -82,6 +82,7 @@ class BallFollower
   const double FOV_HEIGHT;
   const double MAX_FB_STEP;
   const double MAX_RL_TURN;
+  const double IN_PLACE_FB_STEP;
   const double MIN_FB_STEP;
   const double MIN_RL_TURN;
   const double UNIT_FB_STEP;
