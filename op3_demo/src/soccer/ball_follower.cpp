@@ -216,7 +216,7 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
     distance_to_ball *= (-1);
 
   //double distance_to_kick = 0.25;
-  double distance_to_kick = 0.22;
+  double distance_to_kick = 0.20;
 
   // check whether ball is correct position.
   if ((distance_to_ball < distance_to_kick) && (fabs(ball_x_angle) < 25.0))
