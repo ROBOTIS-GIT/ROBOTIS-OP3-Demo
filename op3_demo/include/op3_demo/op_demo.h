@@ -47,7 +47,7 @@ class OPDemo
     GetUpBack = 123,
     RightKick = 121,
     LeftKick = 120,
-    Ceremony = 85,
+    Ceremony = 27,
     ForGrass = 20,
   };
 
