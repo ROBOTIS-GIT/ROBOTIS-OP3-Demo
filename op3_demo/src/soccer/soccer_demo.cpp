@@ -109,7 +109,6 @@ void SoccerDemo::process()
   if (start_following_ == true)
   {
     ball_tracker_.startTracking();
-    // for debug
     ball_follower_.startFollowing();
     start_following_ = false;
 
