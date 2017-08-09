@@ -149,7 +149,7 @@ int FaceTracker::processTracking()
   face_position_.z = 0;
   count_not_found_ = 0;
 
-  double p_gain = 0.5, d_gain = 0.25;
+  double p_gain = 0.6, d_gain = 0.25;
   double x_error_diff = x_error - current_face_pan_;
   double y_error_diff = y_error - current_face_tilt_;
   double x_error_target = x_error * p_gain + x_error_diff * d_gain;
