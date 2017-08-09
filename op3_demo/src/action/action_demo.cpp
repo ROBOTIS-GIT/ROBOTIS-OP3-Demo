@@ -37,7 +37,6 @@ namespace robotis_op
 
 ActionDemo::ActionDemo()
     : SPIN_RATE(30),
-      DEMO_INIT_POSE(8),
       DEBUG_PRINT(false),
       play_index_(0),
       play_status_(StopAction)
@@ -72,7 +71,7 @@ void ActionDemo::setDemoEnable()
 
   ROS_INFO_COND(DEBUG_PRINT, "Start ActionScript Demo");
 
-  playAction(DEMO_INIT_POSE);
+  playAction(InitPose);
 
   startProcess(play_list_name_);
 }

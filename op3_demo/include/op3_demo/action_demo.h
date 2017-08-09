@@ -72,7 +72,6 @@ class ActionDemo : public OPDemo
   };
 
   const int SPIN_RATE;
-  const int DEMO_INIT_POSE;
   const bool DEBUG_PRINT;
 
   void processThread();
