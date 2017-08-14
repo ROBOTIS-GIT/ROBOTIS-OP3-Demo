@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   ball_detector
   op3_walking_module_msgs
+  robotis_controller_msgs
   cmake_modules
   robotis_math
 )
@@ -45,7 +46,7 @@ include_directories(
   ${Eigen_INCLUDE_DIRS}
 )
 
-add_executable(op_demo_node 
+add_executable(op_demo_node
   src/demo_node.cpp
   src/soccer/soccer_demo.cpp
   src/soccer/ball_tracker.cpp
@@ -62,7 +63,7 @@ target_link_libraries(op_demo_node
   yaml-cpp
 )
 
-add_executable(self_test_node 
+add_executable(self_test_node
   src/test_node.cpp
   src/soccer/soccer_demo.cpp
   src/soccer/ball_tracker.cpp
