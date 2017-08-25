@@ -56,7 +56,7 @@ int main(int argc, char **argv)
   //init ros
   ros::init(argc, argv, "op3_tele_op_node");
 
-  //ros::start();
+  ros::start();
 
   //set node loop rate
   ros::Rate loop_rate(SPIN_RATE);

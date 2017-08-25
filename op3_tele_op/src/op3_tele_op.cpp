@@ -41,7 +41,13 @@ OP3Teleop::OP3Teleop()
 }
 
 OP3Teleop::OP3Teleop(const bool debug_print)
-    : nh_(),
+    : nh_(ros::this_node::getName()),
+      MAX_FB_STEP(40.0 * 0.001),
+      MAX_RL_STEP(20 * 0.001),
+      MAX_RL_TURN(15.0 * M_PI / 180),
+      is_walking_(false),
+      is_playing_action_(false),
+      current_status(NONE),
       DEBUG_PRINT(debug_print),
       SPIN_RATE(30)
 {
@@ -50,16 +56,22 @@ OP3Teleop::OP3Teleop(const bool debug_print)
   init_pose_pub_ = nh_.advertise<std_msgs::String>("/robotis/base/ini_pose", 0);
   play_sound_pub_ = nh_.advertise<std_msgs::String>("/play_sound_file", 0);
   led_pub_ = nh_.advertise<robotis_controller_msgs::SyncWriteItem>("/robotis/sync_write_item", 0);
+  motion_index_pub_ = nh_.advertise<std_msgs::Int32>("/robotis/action/page_num", 0);
 
   set_walking_command_pub_ = nh_.advertise<std_msgs::String>("/robotis/walking/command", 0);
   set_walking_param_pub_ = nh_.advertise<op3_walking_module_msgs::WalkingParam>("/robotis/walking/set_params", 0);
+  module_control_preset_pub_ = nh_.advertise<std_msgs::String>("/robotis/enable_ctrl_module", 0);
 
   get_walking_param_client_ = nh_.serviceClient<op3_walking_module_msgs::GetWalkingParam>(
       "/robotis/walking/get_params");
+  get_module_control_client_ = nh_.serviceClient<robotis_controller_msgs::GetJointModule>(
+      "/robotis/get_present_joint_ctrl_modules");
 
-  ros::Subscriber joy_sub = nh_.subscribe("/robotis/open_cr/button", 1, &OP3Teleop::joyHandlerCallback, this);
+  joy_sub_ = nh_.subscribe("/joy", 1, &OP3Teleop::joyHandlerCallback, this);
 
   default_mp3_path_ = ros::package::getPath("op3_demo") + "/Data/mp3/";
+
+  std::cout << "OP3Teleop initialzed " << std::endl;
 }
 
 OP3Teleop::~OP3Teleop()
@@ -95,14 +107,54 @@ void OP3Teleop::setLED(int led)
 
 void OP3Teleop::joyHandlerCallback(const sensor_msgs::Joy::ConstPtr& msg)
 {
-  //msg->buttons
-  //msg->axes
+  // check current status and button
+  // ...
+  // set module
+  if (msg->buttons[PS3_BUTTON_REAR_LEFT_2] && current_status != WALKING)
+  {
+    // set walking Module
+    setControlMode("walking_module");
+    current_status = WALKING;
+  }
+  else if (msg->buttons[PS3_AXIS_BUTTON_REAR_RIGHT_2] && current_status != ACTION)
+  {
+    // set action Module
+    setControlMode("action_module");
+    current_status = ACTION;
+  }
+  else
+  {
+    switch (current_status)
+    {
+      case WALKING:
+      {
+        // walking module
+        // check axis and publish movement command
+        handleWalking(msg->axes[PS3_AXIS_STICK_LEFT_UPWARDS], msg->axes[PS3_AXIS_STICK_RIGHT_LEFTWARDS],
+                      msg->axes[PS3_AXIS_STICK_LEFT_LEFTWARDS]);
 
-  // check axis and publish movement command
-  handleWalking(msg->axes[PS3_AXIS_STICK_LEFT_UPWARDS], msg->axes[PS3_AXIS_STICK_LEFT_LEFTWARDS]);
+        // check button and handle action
+        // handleAction();
 
-  // check button and handle action
-  handleAction();
+        break;
+      }
+
+      case ACTION:
+      {
+        // action module
+        // check button and handle action
+        handleAction(msg->buttons);
+
+        break;
+      }
+
+      default:
+      {
+
+        break;
+      }
+    }
+  }
 }
 
 void OP3Teleop::setWalkingCommand(const std::string &command)
@@ -112,7 +164,10 @@ void OP3Teleop::setWalkingCommand(const std::string &command)
   {
     getWalkingParam();
     setWalkingParam(0.0, 0, 0, true);
+    is_walking_ = true;
   }
+  else
+    is_walking_ = false;
 
   std_msgs::String _command_msg;
   _command_msg.data = command;
@@ -153,14 +208,87 @@ bool OP3Teleop::getWalkingParam()
 
 }
 
-void OP3Teleop::handleWalking(double fb_value, double rl_value)
+void OP3Teleop::handleWalking(double fb_value, double rl_value, double rot_value)
 {
+  // check whether status is walking
+  // ....
+  ROS_INFO_STREAM("FB : " << fb_value << ", RL : " << rl_value);
 
+  if (fb_value == 0.0 && rl_value == 0.0)
+  {
+    setWalkingCommand("stop");
+
+    return;
+  }
+
+  // make walking parameter
+  double fb_length = 0.0, rl_length = 0.0, rot_angle = 0.0;
+  getWalkingParam();
+
+  if (rl_value != 0)
+  {
+    rl_length = rl_value * MAX_RL_STEP;
+  }
+  else
+  {
+    fb_length = fb_value * MAX_FB_STEP;
+    rot_angle = rot_value * MAX_RL_TURN;
+
+    if (fb_value < 0)
+      rot_angle *= -1;
+  }
+
+  // set walking parameter
+  if (is_walking_ == true)
+  {
+    setWalkingParam(fb_length, rl_length, rot_angle, true);
+  }
+  else
+  {
+    setWalkingCommand("start");
+  }
 }
 
-void OP3Teleop::handleAction()
+void OP3Teleop::handleAction(std::vector<int> buttons)
 {
+  // check whether status is action
+  // ....
+  if (buttons[PS3_AXIS_BUTTON_ACTION_SQUARE])
+  {
+    // left kick
+    playMotion(LeftKick);
+  }
+  else if (buttons[PS3_BUTTON_ACTION_CIRCLE])
+  {
+    // right kick
+    playMotion(RightKick);
+  }
+  else if (buttons[PS3_BUTTON_ACTION_TRIANGLE])
+  {
+    playMotion(GetUpFront);
+  }
+  else if (buttons[PS3_BUTTON_ACTION_CROSS])
+  {
+    playMotion(GetUpBack);
+  }
+}
 
+void OP3Teleop::setControlMode(const std::string &mode)
+{
+  std_msgs::String set_module_msg;
+  set_module_msg.data = mode;
+
+  module_control_preset_pub_.publish(set_module_msg);
+
+  ROS_INFO_STREAM("Set Mode : " << mode);
+}
+
+void OP3Teleop::playMotion(int motion_index)
+{
+  std_msgs::Int32 motion_msg;
+  motion_msg.data = motion_index;
+
+  motion_index_pub_.publish(motion_msg);
 }
 
 } /* namespace robotis_op */

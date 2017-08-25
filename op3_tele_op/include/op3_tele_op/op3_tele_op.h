@@ -36,9 +36,11 @@
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <std_msgs/String.h>
+#include <std_msgs/Int32.h>
 #include <sensor_msgs/Joy.h>
 
 #include "robotis_controller_msgs/SyncWriteItem.h"
+#include "robotis_controller_msgs/GetJointModule.h"
 #include "op3_walking_module_msgs/WalkingParam.h"
 #include "op3_walking_module_msgs/GetWalkingParam.h"
 
@@ -93,6 +95,26 @@ class OP3Teleop
     PS3_AXIS_GYRO_YAW               = 19,
   };
 
+  enum CONTROL_STATUS
+  {
+    NONE = 0,
+    BASE = 1,
+    WALKING = 2,
+    ACTION = 3,
+  };
+
+  enum Motion_Index
+  {
+    InitPose = 1,
+    WalkingReady = 9,
+    GetUpFront = 122,
+    GetUpBack = 123,
+    RightKick = 121,
+    LeftKick = 120,
+    Ceremony = 27,
+    ForGrass = 20,
+  };
+
   const bool DEBUG_PRINT;
 
   OP3Teleop();
@@ -103,27 +125,41 @@ class OP3Teleop
   void playSound(const std::string &path);
   void setLED(int led);
 
+  int current_status;
+
  private:
+  const double MAX_FB_STEP;
+  const double MAX_RL_STEP;
+  const double MAX_RL_TURN;
   const int SPIN_RATE;
 
   void joyHandlerCallback(const sensor_msgs::Joy::ConstPtr& msg);
   bool checkManagerRunning(std::string& manager_name);
-  void handleWalking(double fb_value, double rl_value);
-  void handleAction();
+  void handleWalking(double fb_value, double rl_value, double rot_value);
+  void handleAction(std::vector<int> buttons);
 
   void setWalkingCommand(const std::string &command);
   void setWalkingParam(double x_move, double y_move, double rotation_angle, bool balance);
   bool getWalkingParam();
+
+  void setControlMode(const std::string &mode);
+  void playMotion(int motion_index);
+
+  bool is_walking_;
+  bool is_playing_action_;
 
   ros::NodeHandle nh_;
 
   ros::Publisher init_pose_pub_;
   ros::Publisher play_sound_pub_;
   ros::Publisher led_pub_;
+  ros::Publisher motion_index_pub_;
 
-
+  ros::Publisher module_control_preset_pub_;
   ros::Publisher set_walking_command_pub_;
   ros::Publisher set_walking_param_pub_;
+  ros::Subscriber joy_sub_;
+  ros::ServiceClient get_module_control_client_;
   ros::ServiceClient get_walking_param_client_;
   op3_walking_module_msgs::WalkingParam current_walking_param_;
 
