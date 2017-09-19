@@ -74,6 +74,15 @@ BallDetector::BallDetector()
   nh_.param<int>("filter_s_max", detect_config.filter_threshold.s_max, params_config_.filter_threshold.s_max);
   nh_.param<int>("filter_v_min", detect_config.filter_threshold.v_min, params_config_.filter_threshold.v_min);
   nh_.param<int>("filter_v_max", detect_config.filter_threshold.v_max, params_config_.filter_threshold.v_max);
+  nh_.param<bool>("filter_debug", detect_config.debug, params_config_.debug);
+  nh_.param<bool>("use_field", detect_config.use_field, params_config_.use_field);
+  nh_.param<int>("field_h_min", detect_config.field_threshold.h_min, params_config_.field_threshold.h_min);
+  nh_.param<int>("field_h_max", detect_config.field_threshold.h_max, params_config_.field_threshold.h_max);
+  nh_.param<int>("field_s_min", detect_config.field_threshold.s_min, params_config_.field_threshold.s_min);
+  nh_.param<int>("field_s_max", detect_config.field_threshold.s_max, params_config_.field_threshold.s_max);
+  nh_.param<int>("field_v_min", detect_config.field_threshold.v_min, params_config_.field_threshold.v_min);
+  nh_.param<int>("field_v_max", detect_config.field_threshold.v_max, params_config_.field_threshold.v_max);
+  nh_.param<bool>("field_debug", detect_config.debug, params_config_.field_debug);
   nh_.param<bool>("use_second_filter", detect_config.use_second_filter, params_config_.use_second_filter);
   nh_.param<int>("filter2_h_min", detect_config.filter2_threshold.h_min, params_config_.filter2_threshold.h_min);
   nh_.param<int>("filter2_h_max", detect_config.filter2_threshold.h_max, params_config_.filter2_threshold.h_max);
@@ -82,7 +91,6 @@ BallDetector::BallDetector()
   nh_.param<int>("filter2_v_min", detect_config.filter2_threshold.v_min, params_config_.filter2_threshold.v_min);
   nh_.param<int>("filter2_v_max", detect_config.filter2_threshold.v_max, params_config_.filter2_threshold.v_max);
   nh_.param<int>("ellipse_size", detect_config.ellipse_size, params_config_.ellipse_size);
-  nh_.param<bool>("filter_debug", detect_config.debug, params_config_.debug);
 
   //sets publishers
   image_pub_ = it_.advertise("image_out", 100);
@@ -246,6 +254,15 @@ void BallDetector::dynParamCallback(ball_detector::detectorParamsConfig &config,
   params_config_.filter_threshold.s_max = config.filter_s_max;
   params_config_.filter_threshold.v_min = config.filter_v_min;
   params_config_.filter_threshold.v_max = config.filter_v_max;
+  params_config_.debug = config.debug_image;
+  params_config_.use_field = config.use_field;
+  params_config_.field_threshold.h_min = config.filter2_h_min;
+  params_config_.field_threshold.h_max = config.filter2_h_max;
+  params_config_.field_threshold.s_min = config.filter2_s_min;
+  params_config_.field_threshold.s_max = config.filter2_s_max;
+  params_config_.field_threshold.v_min = config.filter2_v_min;
+  params_config_.field_threshold.v_max = config.filter2_v_max;
+  params_config_.field_debug = config.field_debug_image;
   params_config_.use_second_filter = config.use_second_filter;
   params_config_.filter2_threshold.h_min = config.filter2_h_min;
   params_config_.filter2_threshold.h_max = config.filter2_h_max;
@@ -254,7 +271,6 @@ void BallDetector::dynParamCallback(ball_detector::detectorParamsConfig &config,
   params_config_.filter2_threshold.v_min = config.filter2_v_min;
   params_config_.filter2_threshold.v_max = config.filter2_v_max;
   params_config_.ellipse_size = config.ellipse_size;
-  params_config_.debug = config.debug_image;
 
   // gaussian_blur has to be odd number.
   if (params_config_.gaussian_blur_size % 2 == 0)
@@ -279,28 +295,38 @@ void BallDetector::printConfig()
   if (init_param_ == false)
     return;
 
-  std::cout << "Detetctor Configuration:" << std::endl << "    gaussian_blur_size: "
-            << params_config_.gaussian_blur_size << std::endl << "    gaussian_blur_sigma: "
-            << params_config_.gaussian_blur_sigma << std::endl << "    canny_edge_th: " << params_config_.canny_edge_th
-            << std::endl << "    hough_accum_resolution: " << params_config_.hough_accum_resolution << std::endl
-            << "    min_circle_dist: " << params_config_.min_circle_dist << std::endl << "    hough_accum_th: "
-            << params_config_.hough_accum_th << std::endl << "    min_radius: " << params_config_.min_radius
-            << std::endl << "    max_radius: " << params_config_.max_radius << std::endl << "    filter_h_min: "
-            << params_config_.filter_threshold.h_min << std::endl << "    filter_h_max: "
-            << params_config_.filter_threshold.h_max << std::endl << "    filter_s_min: "
-            << params_config_.filter_threshold.s_min << std::endl << "    filter_s_max: "
-            << params_config_.filter_threshold.s_max << std::endl << "    filter_v_min: "
-            << params_config_.filter_threshold.v_min << std::endl << "    filter_v_max: "
-            << params_config_.filter_threshold.v_max << std::endl << "    use_second_filter: "
-            << params_config_.use_second_filter << std::endl << "    filter2_h_min: "
-            << params_config_.filter2_threshold.h_min << std::endl << "    filter2_h_max: "
-            << params_config_.filter2_threshold.h_max << std::endl << "    filter2_s_min: "
-            << params_config_.filter2_threshold.s_min << std::endl << "    filter2_s_max: "
-            << params_config_.filter2_threshold.s_max << std::endl << "    filter2_v_min: "
-            << params_config_.filter2_threshold.v_min << std::endl << "    filter2_v_max: "
-            << params_config_.filter2_threshold.v_max << std::endl << "    ellipse_size: "
-            << params_config_.ellipse_size << std::endl << "    filter_image_to_debug: " << params_config_.debug
-            << std::endl << std::endl;
+  std::cout << "Detetctor Configuration:" << std::endl
+            << "    gaussian_blur_size: " << params_config_.gaussian_blur_size << std::endl
+            << "    gaussian_blur_sigma: " << params_config_.gaussian_blur_sigma << std::endl
+            << "    canny_edge_th: " << params_config_.canny_edge_th << std::endl
+            << "    hough_accum_resolution: " << params_config_.hough_accum_resolution << std::endl
+            << "    min_circle_dist: " << params_config_.min_circle_dist << std::endl
+            << "    hough_accum_th: " << params_config_.hough_accum_th << std::endl
+            << "    min_radius: " << params_config_.min_radius << std::endl
+            << "    max_radius: " << params_config_.max_radius << std::endl
+            << "    filter_h_min: " << params_config_.filter_threshold.h_min << std::endl
+            << "    filter_h_max: " << params_config_.filter_threshold.h_max << std::endl
+            << "    filter_s_min: " << params_config_.filter_threshold.s_min << std::endl
+            << "    filter_s_max: " << params_config_.filter_threshold.s_max << std::endl
+            << "    filter_v_min: " << params_config_.filter_threshold.v_min << std::endl
+            << "    filter_v_max: " << params_config_.filter_threshold.v_max << std::endl
+            << "    filter_image_to_debug: " << params_config_.debug << std::endl
+            << "    field_filter: " << params_config_.use_field << std::endl
+            << "    field_h_min: " << params_config_.field_threshold.h_min << std::endl
+            << "    field_h_max: " << params_config_.field_threshold.h_max << std::endl
+            << "    field_s_min: " << params_config_.field_threshold.s_min << std::endl
+            << "    field_s_max: " << params_config_.field_threshold.s_max << std::endl
+            << "    field_v_min: " << params_config_.field_threshold.v_min << std::endl
+            << "    field_v_max: " << params_config_.field_threshold.v_max << std::endl
+            << "    filter_image_for_field: " << params_config_.field_debug << std::endl
+            << "    use_second_filter: " << params_config_.use_second_filter << std::endl
+            << "    filter2_h_min: " << params_config_.filter2_threshold.h_min << std::endl
+            << "    filter2_h_max: " << params_config_.filter2_threshold.h_max << std::endl
+            << "    filter2_s_min: " << params_config_.filter2_threshold.s_min << std::endl
+            << "    filter2_s_max: " << params_config_.filter2_threshold.s_max << std::endl
+            << "    filter2_v_min: " << params_config_.filter2_threshold.v_min << std::endl
+            << "    filter2_v_max: " << params_config_.filter2_threshold.v_max << std::endl
+            << "    ellipse_size: " << params_config_.ellipse_size << std::endl << std::endl;
 }
 
 void BallDetector::saveConfig()
@@ -325,6 +351,15 @@ void BallDetector::saveConfig()
   yaml_out << YAML::Key << "filter_s_max" << YAML::Value << params_config_.filter_threshold.s_max;
   yaml_out << YAML::Key << "filter_v_min" << YAML::Value << params_config_.filter_threshold.v_min;
   yaml_out << YAML::Key << "filter_v_max" << YAML::Value << params_config_.filter_threshold.v_max;
+  yaml_out << YAML::Key << "filter_debug" << YAML::Value << params_config_.debug;
+  yaml_out << YAML::Key << "use_field" << YAML::Value << params_config_.use_field;
+  yaml_out << YAML::Key << "field_h_min" << YAML::Value << params_config_.field_threshold.h_min;
+  yaml_out << YAML::Key << "field_h_max" << YAML::Value << params_config_.field_threshold.h_max;
+  yaml_out << YAML::Key << "field_s_min" << YAML::Value << params_config_.field_threshold.s_min;
+  yaml_out << YAML::Key << "field_s_max" << YAML::Value << params_config_.field_threshold.s_max;
+  yaml_out << YAML::Key << "field_v_min" << YAML::Value << params_config_.field_threshold.v_min;
+  yaml_out << YAML::Key << "field_v_max" << YAML::Value << params_config_.field_threshold.v_max;
+  yaml_out << YAML::Key << "field_debug" << YAML::Value << params_config_.field_debug;
   yaml_out << YAML::Key << "use_second_filter" << YAML::Value << params_config_.use_second_filter;
   yaml_out << YAML::Key << "filter2_h_min" << YAML::Value << params_config_.filter2_threshold.h_min;
   yaml_out << YAML::Key << "filter2_h_max" << YAML::Value << params_config_.filter2_threshold.h_max;
@@ -333,7 +368,6 @@ void BallDetector::saveConfig()
   yaml_out << YAML::Key << "filter2_v_min" << YAML::Value << params_config_.filter2_threshold.v_min;
   yaml_out << YAML::Key << "filter2_v_max" << YAML::Value << params_config_.filter2_threshold.v_max;
   yaml_out << YAML::Key << "ellipse_size" << YAML::Value << params_config_.ellipse_size;
-  yaml_out << YAML::Key << "filter_debug" << YAML::Value << params_config_.debug;
   yaml_out << YAML::EndMap;
 
   // output to file
@@ -365,8 +399,8 @@ void BallDetector::filterImage()
 
   inRangeHsv(img_hsv, params_config_.filter_threshold, img_filtered);
 
-  // mophology : open and close
-  mophology(img_filtered, img_filtered, params_config_.ellipse_size);
+  // morphology : open and close
+  morphology(img_filtered, img_filtered, params_config_.ellipse_size);
 
   if (params_config_.use_second_filter == true)
   {
@@ -374,7 +408,7 @@ void BallDetector::filterImage()
     cv::Mat img_mask;
 
     // check hsv range
-    cv::Mat img_filtered2;
+    //cv::Mat img_filtered2;
     inRangeHsv(img_hsv, params_config_.filter2_threshold, img_filtered2);
 
     makeFilterMaskFromBall(img_filtered, img_mask);
@@ -384,7 +418,20 @@ void BallDetector::filterImage()
     cv::bitwise_or(img_filtered, img_filtered2, img_filtered);
   }
 
-  mophology(img_filtered, img_filtered, params_config_.ellipse_size);
+  if (params_config_.use_field == true)
+  {
+    // mask
+    cv::Mat img_mask;
+
+    //hsv range
+    inRangeHsv(img_hsv, params_config_.field_threshold, img_field_filtered);
+    makeFilterMaskFromBall(img_filtered, img_mask);
+    cv::bitwise_and(img_field_filtered, img_mask, img_filtered);
+
+    cv::cvtColor(img_field_filtered, img_field_filtered, cv::COLOR_GRAY2RGB);
+  }
+
+  morphology(img_filtered, img_filtered, params_config_.ellipse_size);
 
   cv::cvtColor(img_filtered, in_image_, cv::COLOR_GRAY2RGB);
 }
@@ -502,7 +549,7 @@ void BallDetector::inRangeHsv(const cv::Mat &input_img, const HsvFilter &filter_
   }
 }
 
-void BallDetector::mophology(const cv::Mat &intput_img, cv::Mat &output_img, int ellipse_size)
+void BallDetector::morphology(const cv::Mat &intput_img, cv::Mat &output_img, int ellipse_size)
 {
   cv::erode(intput_img, output_img, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(ellipse_size, ellipse_size)));
   cv::dilate(output_img, output_img,
@@ -582,7 +629,11 @@ void BallDetector::drawOutputImage()
 
   //draws results to output Image
   if (params_config_.debug == true)
+  {
     out_image_ = in_image_.clone();
+//    if (params_config_.field_debug == true)
+//      out_image_ = img_field_filtered.clone();
+  }
 
   for (ii = 0; ii < circles_.size(); ii++)
   {

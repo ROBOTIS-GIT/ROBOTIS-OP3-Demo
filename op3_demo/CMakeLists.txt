@@ -49,6 +49,8 @@ include_directories(
 add_executable(op_demo_node
   src/demo_node.cpp
   src/soccer/soccer_demo.cpp
+  src/soccer/keeper_demo.cpp
+  src/soccer/pk_demo.cpp
   src/soccer/ball_tracker.cpp
   src/soccer/ball_follower.cpp
   src/action/action_demo.cpp
@@ -66,6 +68,8 @@ target_link_libraries(op_demo_node
 add_executable(self_test_node
   src/test_node.cpp
   src/soccer/soccer_demo.cpp
+  src/soccer/keeper_demo.cpp
+  src/soccer/pk_demo.cpp
   src/soccer/ball_tracker.cpp
   src/soccer/ball_follower.cpp
   src/action/action_demo.cpp

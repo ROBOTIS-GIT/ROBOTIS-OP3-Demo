@@ -34,6 +34,8 @@
 #include <std_msgs/String.h>
 
 #include "op3_demo/soccer_demo.h"
+#include "op3_demo/keeper_demo.h"
+#include "op3_demo/pk_demo.h"
 #include "op3_demo/action_demo.h"
 #include "op3_demo/vision_demo.h"
 #include "robotis_math/robotis_linear_algebra.h"
@@ -41,11 +43,13 @@
 
 enum Demo_Status
 {
-  Ready = 0,
-  SoccerDemo = 1,
-  VisionDemo = 2,
-  ActionDemo = 3,
-  DemoCount = 4,
+    Ready = 0,
+    SoccerDemo = 1,
+    KeeperDemo = 2,
+    PKDemo = 3,
+    VisionDemo = 4,
+    ActionDemo = 5,
+    DemoCount = 6,
 };
 
 void buttonHandlerCallback(const std_msgs::String::ConstPtr& msg);
@@ -77,6 +81,8 @@ int main(int argc, char **argv)
   //create ros wrapper object
   robotis_op::OPDemo *current_demo = NULL;
   robotis_op::SoccerDemo *soccer_demo = new robotis_op::SoccerDemo();
+  robotis_op::KeeperDemo *keeper_demo = new robotis_op::KeeperDemo();
+  robotis_op::PKDemo *pk_demo = new robotis_op::PKDemo();
   robotis_op::ActionDemo *action_demo = new robotis_op::ActionDemo();
   robotis_op::VisionDemo *vision_demo = new robotis_op::VisionDemo();
 
@@ -147,6 +153,31 @@ int main(int argc, char **argv)
           ROS_INFO_COND(DEBUG_PRINT, "[Start] Soccer Demo");
           break;
         }
+
+        case KeeperDemo:
+        {
+          if (current_demo != NULL)
+            current_demo->setDemoDisable();
+
+          current_demo = keeper_demo;
+          current_demo->setDemoEnable();
+
+          ROS_INFO_COND(DEBUG_PRINT, "[Start] Keeper Demo");
+          break;
+        }
+
+        case PKDemo:
+        {
+          if (current_demo != NULL)
+            current_demo->setDemoDisable();
+
+          current_demo = pk_demo;
+          current_demo->setDemoEnable();
+
+          ROS_INFO_COND(DEBUG_PRINT, "[Start] PK Demo");
+          break;
+        }
+
 
         case VisionDemo:
         {
@@ -230,6 +261,16 @@ void buttonHandlerCallback(const std_msgs::String::ConstPtr& msg)
           playSound(default_mp3_path + "Start soccer demonstration.mp3");
           break;
 
+        case KeeperDemo:
+          dxlTorqueChecker();
+          playSound(default_mp3_path + "Start soccer demonstration.mp3");
+          break;
+
+        case PKDemo:
+          dxlTorqueChecker();
+          playSound(default_mp3_path + "Start soccer demonstration.mp3");
+          break;
+
         case VisionDemo:
           dxlTorqueChecker();
           playSound(default_mp3_path + "Start vision processing demonstration.mp3");
@@ -260,14 +301,24 @@ void buttonHandlerCallback(const std_msgs::String::ConstPtr& msg)
           setLED(0x01);
           break;
 
+        case KeeperDemo:
+          playSound(default_mp3_path + "Autonomous soccer mode.mp3");
+          setLED(0x02);
+          break;
+
+        case PKDemo:
+          playSound(default_mp3_path + "Autonomous soccer mode.mp3");
+          setLED(0x04);
+          break;
+
         case VisionDemo:
           playSound(default_mp3_path + "Vision processing mode.mp3");
-          setLED(0x02);
+          setLED(0x10);
           break;
 
         case ActionDemo:
           playSound(default_mp3_path + "Interactive motion mode.mp3");
-          setLED(0x04);
+          setLED(0x11);
           break;
 
         default:

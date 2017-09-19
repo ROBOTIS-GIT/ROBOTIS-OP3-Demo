@@ -45,10 +45,15 @@ class OPDemo
     WalkingReady = 9,
     GetUpFront = 122,
     GetUpBack = 123,
-    RightKick = 121,
-    LeftKick = 120,
-    Ceremony = 27,
     ForGrass = 20,
+    RightKick = 83, //121,
+    LeftKick = 84, //120,
+    Ceremony = 27,
+    KeeperReady = 7,
+    KeeperReReady = 8,
+    KeeperAction = 35,
+    KeeperRight = 33, //37, 33
+    KeeperLeft = 34, //36, 34
   };
 
   OPDemo()

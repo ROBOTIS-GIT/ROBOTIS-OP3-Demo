@@ -92,7 +92,7 @@ class BallDetector
   void makeFilterMask(const cv::Mat &source_img, cv::Mat &mask_img, int range);
   void makeFilterMaskFromBall(const cv::Mat &source_img, cv::Mat &mask_img);
   void inRangeHsv(const cv::Mat &input_img, const HsvFilter &filter_value, cv::Mat &output_img);
-  void mophology(const cv::Mat &intput_img, cv::Mat &output_img, int ellipse_size);
+  void morphology(const cv::Mat &intput_img, cv::Mat &output_img, int ellipse_size);
   void houghDetection(const unsigned int imgEncoding);
   void drawOutputImage();
 
@@ -147,6 +147,9 @@ class BallDetector
   std::vector<cv::Vec3f> circles_;
   cv::Mat in_image_;
   cv::Mat out_image_;
+
+  cv::Mat img_field_filtered;
+  cv::Mat img_filtered2;
 
   dynamic_reconfigure::Server<ball_detector::detectorParamsConfig> param_server_;
   dynamic_reconfigure::Server<ball_detector::detectorParamsConfig>::CallbackType callback_fnc_;
