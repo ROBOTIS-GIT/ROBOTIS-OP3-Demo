@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<launch>    
+    <!-- joy node -->
+    <node pkg="joy" type="joy_node" name="joy_node" output="screen"/>
+    
+    <!-- robotis op3 tele op -->
+    <node pkg="op3_tele_op" type="op3_tele_op_node" name="op3_tele_op_node" output="screen"/>
+</launch>
+

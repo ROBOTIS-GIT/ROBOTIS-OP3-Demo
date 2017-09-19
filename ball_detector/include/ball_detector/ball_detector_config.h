@@ -90,6 +90,9 @@ class DetectorConfig
   int min_radius;                 // minimum circle radius allowed
   int max_radius;                 // maximum circle radius allowed
   HsvFilter filter_threshold;     // filter threshold
+  bool use_field;
+  HsvFilter field_threshold;      // field filter threshold
+  bool field_debug;
   bool use_second_filter;
   HsvFilter filter2_threshold;     // filter threshold
   int ellipse_size;
@@ -103,6 +106,8 @@ class DetectorConfig
         min_radius(MIN_RADIUS_DEFAULT),
         max_radius(MAX_RADIUS_DEFAULT),
         filter_threshold(),
+        use_field(false),
+        field_threshold(),
         use_second_filter(false),
         filter2_threshold(),
         ellipse_size(ELLIPSE_SIZE),

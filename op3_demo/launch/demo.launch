@@ -7,6 +7,9 @@
 
     <!-- Camera and Ball detector -->
     <include file="$(find ball_detector)/launch/ball_detector_from_usb_cam.launch"/> 
+
+    <!-- goalpost detector -->
+    <include file="$(find goalpost_detector)/launch/goalpost_detector.launch" />
    
     <!-- face tracking -->
     <include file="$(find op3_demo)/launch/face_detection_op3.launch" />

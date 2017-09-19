@@ -56,6 +56,7 @@ BallTracker::BallTracker()
   ball_position_sub_ = nh_.subscribe("/ball_detector_node/circle_set", 1, &BallTracker::ballPositionCallback, this);
   ball_tracking_command_sub_ = nh_.subscribe("/ball_tracker/command", 1, &BallTracker::ballTrackerCommandCallback,
                                              this);
+  present_joint_states_sub_ = nh_.subscribe("/robotis/present_joint_states", 5, &BallTracker::presentJointStatesCallback, this);
 }
 
 BallTracker::~BallTracker()
@@ -93,6 +94,31 @@ void BallTracker::ballTrackerCommandCallback(const std_msgs::String::ConstPtr &m
   }
 }
 
+void BallTracker::presentJointStatesCallback(const sensor_msgs::JointState::ConstPtr &msg)
+{
+  double pan, tilt;
+  int get_count = 0;
+
+  for (int ix = 0; ix < msg->name.size(); ix++)
+  {
+    if (msg->name[ix] == "head_pan")
+    {
+      pan = msg->position[ix];
+      get_count += 1;
+    }
+    else if (msg->name[ix] == "head_tilt")
+    {
+      tilt = msg->position[ix];
+      get_count += 1;
+    }
+
+    if (get_count == 2)
+      break;
+  }
+  head_tilt_ = tilt;
+  head_pan_ = pan;
+}
+
 void BallTracker::startTracking()
 {
   on_tracking_ = true;
@@ -126,7 +152,8 @@ int BallTracker::processTracking()
   }
 
   // check ball position
-  if (ball_position_.z <= 0)
+  if (ball_position_.z <= 0 ||
+      ball_position_.z > 0 && head_tilt_*180/M_PI > -10)
   {
     count_not_found_++;
 
@@ -143,11 +170,13 @@ int BallTracker::processTracking()
       count_not_found_ = 0;
       tracking_status = NotFound;
     }
+
     else
     {
       tracking_status = NotFound;
     }
   }
+
   else
   {
     count_not_found_ = 0;
@@ -191,7 +220,9 @@ int BallTracker::processTracking()
   prev_time_ = curr_time;
 
   // double p_gain = 0.7, d_gain = 0.05;
-  double p_gain = 0.75, d_gain = 0.04;
+  // double p_gain = 0.7, d_gain = 0.02;
+  // double p_gain = 5, d_gain = 0.21;
+  double p_gain = 0.7, d_gain = 0.01;
   double x_error_diff = (x_error - current_ball_pan_) / delta_time;
   double y_error_diff = (y_error - current_ball_tilt_) / delta_time;
   double x_error_target = x_error * p_gain + x_error_diff * d_gain;
