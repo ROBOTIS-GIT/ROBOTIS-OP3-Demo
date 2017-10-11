@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   ball_detector
   op3_walking_module_msgs
   op3_action_module_msgs
+  robotis_controller_msgs
   cmake_modules
   robotis_math
 )
