@@ -10,7 +10,7 @@
   <author email="kmjung@robotis.com">kayman</author>
   <maintainer email="pyo@robotis.com">Pyo</maintainer>
 
-  <buildtool_depend>catkin</buildtool_depend>  
+  <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>roslib</build_depend>
   <build_depend>sensor_msgs</build_depend>
@@ -19,7 +19,7 @@
   <build_depend>op3_walking_module_msgs</build_depend>
   <build_depend>op3_action_module_msgs</build_depend>
   <build_depend>cmake_modules</build_depend>
-  <build_depend>robotis_math</build_depend>  
+  <build_depend>robotis_math</build_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>roslib</run_depend>
   <run_depend>sensor_msgs</run_depend>
