@@ -7,7 +7,7 @@
         It requires and input image and publish, at frame rate, a marked image
         and a stamped array of circle centers and radius.
   </description>
-  <license>BSD</license>
+  <license>Apache License 2.0</license>
   <author email="kmjung@robotis.com">kayman</author>
   <maintainer email="pyo@robotis.com">Pyo</maintainer>
 
