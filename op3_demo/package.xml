@@ -6,7 +6,7 @@
     op3 default demo
     It includes three demontrations(soccer demo, vision demo, action script demo)
   </description>
-  <license>BSD</license>
+  <license>Apache License 2.0</license>
   <author email="kmjung@robotis.com">kayman</author>
   <maintainer email="pyo@robotis.com">Pyo</maintainer>
 
