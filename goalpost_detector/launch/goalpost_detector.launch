@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+    <arg  name="params_path" default="$(find goalpost_detector)/launch/goalpost_detector_params.yaml" />
+
+    <!-- goalpost detector -->
+    <node pkg="goalpost_detector" type="goalpost_detector_node" name="goalpost_detector_node" args="" output="screen">
+        <rosparam command="load" file="$(arg params_path)"/>
+        <param name="yaml_path" type="string" value="$(arg params_path)"/>
+        <remap from="/goalpost_detector_node/image_in" to="/usb_cam_node/image_raw" />
+        <remap from="/goalpost_detector_node/cameraInfo_in" to="/usb_cam_node/camera_info" />
+    </node>
+</launch>
