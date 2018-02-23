@@ -282,6 +282,7 @@ void BallDetector::paramCommandCallback(const std_msgs::String::ConstPtr &msg)
   else if(msg->data == "reset")
   {
     // load default parameters and apply
+    resetParameter();
   }
 }
 
