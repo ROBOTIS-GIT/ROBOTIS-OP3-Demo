@@ -79,6 +79,7 @@ BallDetector::BallDetector()
   enable_sub_ = nh_.subscribe("enable", 1, &BallDetector::enableCallback, this);
   image_sub_ = it_.subscribe("image_in", 1, &BallDetector::imageCallback, this);
   camera_info_sub_ = nh_.subscribe("cameraInfo_in", 100, &BallDetector::cameraInfoCallback, this);
+  param_command_sub_ = nh_.subscribe("param_command", 1, &BallDetector::paramCommandCallback, this);
 
   //initializes newImageFlag
   new_image_flag_ = false;
@@ -258,6 +259,24 @@ void BallDetector::cameraInfoCallback(const sensor_msgs::CameraInfo & msg)
     return;
 
   camera_info_msg_ = msg;
+}
+
+void BallDetector::paramCommandCallback(const std_msgs::String::ConstPtr &msg)
+{
+  if(msg->data == "debug")
+  {
+    params_config_.debug = true;
+    saveConfig();
+  }
+  else if(msg->data == "normal")
+  {
+    params_config_.debug = false;
+    saveConfig();
+  }
+  else if(msg->data == "reset")
+  {
+    // load default parameters and apply
+  }
 }
 
 void BallDetector::printConfig()

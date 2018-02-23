@@ -27,6 +27,7 @@
 //ros dependencies
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
+#include <std_msgs/String.h>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/CameraInfo.h>
@@ -70,6 +71,8 @@ class BallDetector
   void dynParamCallback(ball_detector::detectorParamsConfig &config, uint32_t level);
   void enableCallback(const std_msgs::Bool::ConstPtr &msg);
 
+  void paramCommandCallback(const std_msgs::String::ConstPtr &msg);
+
   void printConfig();
   void saveConfig();
   void setInputImage(const cv::Mat & inIm);
@@ -86,6 +89,7 @@ class BallDetector
   ros::NodeHandle nh_;
 
   ros::Subscriber enable_sub_;
+  ros::Subscriber param_command_sub_;
 
   //image publisher/subscriber
   image_transport::ImageTransport it_;
