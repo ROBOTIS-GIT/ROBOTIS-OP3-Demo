@@ -302,6 +302,7 @@ bool BallDetector::setParamCallback(ball_detector::SetParameters::Request &req, 
   params_config_.filter_threshold.s_max = req.params.filter_s_max;
   params_config_.filter_threshold.v_min = req.params.filter_v_min;
   params_config_.filter_threshold.v_max = req.params.filter_v_max;
+  params_config_.ellipse_size = req.params.ellipse_size;
 
   saveConfig();
 
@@ -326,6 +327,7 @@ bool BallDetector:: getParamCallback(ball_detector::GetParameters::Request &req,
   res.returns.filter_s_max = params_config_.filter_threshold.s_max;
   res.returns.filter_v_min = params_config_.filter_threshold.v_min;
   res.returns.filter_v_max = params_config_.filter_threshold.v_max;
+  res.returns.ellipse_size = params_config_.ellipse_size;
 
   return true;
 }
@@ -400,6 +402,7 @@ void BallDetector::publishParam()
   params.filter_s_max = params_config_.filter_threshold.s_max;
   params.filter_v_min = params_config_.filter_threshold.v_min;
   params.filter_v_max = params_config_.filter_threshold.v_max;
+  params.filter_v_max = params_config_.ellipse_size;
 
   param_pub_.publish(params);
 }

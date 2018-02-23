@@ -14,3 +14,4 @@ uint32  filter_s_min            # 0 - 255
 uint32  filter_s_max
 uint32  filter_v_min            # 0 - 255
 uint32  filter_v_max
+uint32  ellipse_size            # 1 - 9
