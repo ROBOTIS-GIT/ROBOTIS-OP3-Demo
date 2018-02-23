@@ -402,7 +402,7 @@ void BallDetector::publishParam()
   params.filter_s_max = params_config_.filter_threshold.s_max;
   params.filter_v_min = params_config_.filter_threshold.v_min;
   params.filter_v_max = params_config_.filter_threshold.v_max;
-  params.filter_v_max = params_config_.ellipse_size;
+  params.ellipse_size = params_config_.ellipse_size;
 
   param_pub_.publish(params);
 }
