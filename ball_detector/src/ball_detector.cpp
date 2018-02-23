@@ -88,6 +88,10 @@ BallDetector::BallDetector()
   callback_fnc_ = boost::bind(&BallDetector::dynParamCallback, this, _1, _2);
   param_server_.setCallback(callback_fnc_);
 
+  // web setting
+  set_param_client_ = nh_.advertiseService("set_param", &BallDetector::setParamCallback, this);
+  get_param_client_ = nh_.advertiseService("get_param", &BallDetector::getParamCallback, this);
+
   //sets config and prints it
   params_config_ = detect_config;
   init_param_ = true;
@@ -277,6 +281,50 @@ void BallDetector::paramCommandCallback(const std_msgs::String::ConstPtr &msg)
   {
     // load default parameters and apply
   }
+}
+
+bool BallDetector::setParamCallback(ball_detector::SetParameters::Request &req, ball_detector::SetParameters::Response &res)
+{
+  params_config_.gaussian_blur_size = req.params.gaussian_blur_size;
+  params_config_.gaussian_blur_sigma = req.params.gaussian_blur_sigma;
+  params_config_.canny_edge_th = req.params.canny_edge_th;
+  params_config_.hough_accum_resolution = req.params.hough_accum_resolution;
+  params_config_.min_circle_dist = req.params.min_circle_dist;
+  params_config_.hough_accum_th = req.params.hough_accum_th;
+  params_config_.min_radius = req.params.min_radius;
+  params_config_.max_radius = req.params.max_radius;
+  params_config_.filter_threshold.h_min = req.params.filter_h_min;
+  params_config_.filter_threshold.h_max = req.params.filter_h_max;
+  params_config_.filter_threshold.s_min = req.params.filter_s_min;
+  params_config_.filter_threshold.s_max = req.params.filter_s_max;
+  params_config_.filter_threshold.v_min = req.params.filter_v_min;
+  params_config_.filter_threshold.v_max = req.params.filter_v_max;
+
+  saveConfig();
+
+  res.returns = req.params;
+
+  return true;
+}
+
+bool BallDetector::getParamCallback(ball_detector::GetParameters::Request &req, ball_detector::GetParameters::Response &res)
+{
+  res.returns.gaussian_blur_size = params_config_.gaussian_blur_size;
+  res.returns.gaussian_blur_sigma = params_config_.gaussian_blur_sigma;
+  res.returns.canny_edge_th = params_config_.canny_edge_th;
+  res.returns.hough_accum_resolution = params_config_.hough_accum_resolution;
+  res.returns.min_circle_dist = params_config_.min_circle_dist;
+  res.returns.hough_accum_th = params_config_.hough_accum_th;
+  res.returns.min_radius = params_config_.min_radius;
+  res.returns.max_radius = params_config_.max_radius;
+  res.returns.filter_h_min = params_config_.filter_threshold.h_min;
+  res.returns.filter_h_max = params_config_.filter_threshold.h_max;
+  res.returns.filter_s_min = params_config_.filter_threshold.s_min;
+  res.returns.filter_s_max = params_config_.filter_threshold.s_max;
+  res.returns.filter_v_min = params_config_.filter_threshold.v_min;
+  res.returns.filter_v_max = params_config_.filter_threshold.v_max;
+
+  return true;
 }
 
 void BallDetector::printConfig()

@@ -37,6 +37,8 @@
 #include "ball_detector/circleSetStamped.h"
 #include "ball_detector/ball_detector_config.h"
 #include "ball_detector/detectorParamsConfig.h"
+#include "ball_detector/GetParameters.h"
+#include "ball_detector/SetParameters.h"
 
 namespace robotis_op
 {
@@ -72,6 +74,8 @@ class BallDetector
   void enableCallback(const std_msgs::Bool::ConstPtr &msg);
 
   void paramCommandCallback(const std_msgs::String::ConstPtr &msg);
+  bool setParamCallback(ball_detector::SetParameters::Request &req, ball_detector::SetParameters::Response &res);
+  bool getParamCallback(ball_detector::GetParameters::Request &req, ball_detector::GetParameters::Response &res);
 
   void printConfig();
   void saveConfig();
@@ -89,7 +93,6 @@ class BallDetector
   ros::NodeHandle nh_;
 
   ros::Subscriber enable_sub_;
-  ros::Subscriber param_command_sub_;
 
   //image publisher/subscriber
   image_transport::ImageTransport it_;
@@ -115,6 +118,11 @@ class BallDetector
   DetectorConfig params_config_;
   std::string param_path_;
   bool has_path_;
+
+  // web setting
+  ros::Subscriber param_command_sub_;
+  ros::ServiceServer get_param_client_;
+  ros::ServiceServer set_param_client_;
 
   //flag indicating a new image has been received
   bool new_image_flag_;
