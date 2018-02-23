@@ -24,6 +24,13 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   circleSetStamped.msg
+  BallDetectorParams.msg
+)
+
+add_service_files(
+  FILES
+  GetParameters.srv
+  SetParameters.srv
 )
 
 generate_messages(
