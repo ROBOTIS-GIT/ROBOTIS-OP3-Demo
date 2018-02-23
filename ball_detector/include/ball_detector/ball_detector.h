@@ -26,6 +26,7 @@
 
 //ros dependencies
 #include <ros/ros.h>
+#include <ros/package.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/String.h>
 #include <image_transport/image_transport.h>
@@ -76,6 +77,8 @@ class BallDetector
   void paramCommandCallback(const std_msgs::String::ConstPtr &msg);
   bool setParamCallback(ball_detector::SetParameters::Request &req, ball_detector::SetParameters::Response &res);
   bool getParamCallback(ball_detector::GetParameters::Request &req, ball_detector::GetParameters::Response &res);
+  void resetParameter();
+  void publishParam();
 
   void printConfig();
   void saveConfig();
@@ -120,6 +123,8 @@ class BallDetector
   bool has_path_;
 
   // web setting
+  std::string default_setting_path_;
+  ros::Publisher param_pub_;
   ros::Subscriber param_command_sub_;
   ros::ServiceServer get_param_client_;
   ros::ServiceServer set_param_client_;

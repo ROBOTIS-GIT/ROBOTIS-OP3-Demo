@@ -25,12 +25,12 @@ namespace robotis_op
 {
 
 BallDetector::BallDetector()
-    : nh_(ros::this_node::getName()),
-      it_(this->nh_),
-      enable_(true),
-      params_config_(),
-      init_param_(false),
-      not_found_count_(0)
+  : nh_(ros::this_node::getName()),
+    it_(this->nh_),
+    enable_(true),
+    params_config_(),
+    init_param_(false),
+    not_found_count_(0)
 {
   has_path_ = nh_.getParam("yaml_path", param_path_);
 
@@ -79,7 +79,6 @@ BallDetector::BallDetector()
   enable_sub_ = nh_.subscribe("enable", 1, &BallDetector::enableCallback, this);
   image_sub_ = it_.subscribe("image_in", 1, &BallDetector::imageCallback, this);
   camera_info_sub_ = nh_.subscribe("cameraInfo_in", 100, &BallDetector::cameraInfoCallback, this);
-  param_command_sub_ = nh_.subscribe("param_command", 1, &BallDetector::paramCommandCallback, this);
 
   //initializes newImageFlag
   new_image_flag_ = false;
@@ -89,8 +88,11 @@ BallDetector::BallDetector()
   param_server_.setCallback(callback_fnc_);
 
   // web setting
+  param_pub_ = nh_.advertise<ball_detector::BallDetectorParams>("current_params", 1);
+  param_command_sub_ = nh_.subscribe("param_command", 1, &BallDetector::paramCommandCallback, this);
   set_param_client_ = nh_.advertiseService("set_param", &BallDetector::setParamCallback, this);
   get_param_client_ = nh_.advertiseService("get_param", &BallDetector::getParamCallback, this);
+  default_setting_path_ = ros::package::getPath(ROS_PACKAGE_NAME) + "/launch/ball_detector_params_default.yaml";
 
   //sets config and prints it
   params_config_ = detect_config;
@@ -145,15 +147,15 @@ void BallDetector::publishImage()
   cv_img_pub_.header.frame_id = image_frame_id_;
   switch (img_encoding_)
   {
-    case IMG_RGB8:
-      cv_img_pub_.encoding = sensor_msgs::image_encodings::RGB8;
-      break;
-    case IMG_MONO:
-      cv_img_pub_.encoding = sensor_msgs::image_encodings::MONO8;
-      break;
-    default:
-      cv_img_pub_.encoding = sensor_msgs::image_encodings::MONO8;
-      break;
+  case IMG_RGB8:
+    cv_img_pub_.encoding = sensor_msgs::image_encodings::RGB8;
+    break;
+  case IMG_MONO:
+    cv_img_pub_.encoding = sensor_msgs::image_encodings::MONO8;
+    break;
+  default:
+    cv_img_pub_.encoding = sensor_msgs::image_encodings::MONO8;
+    break;
   }
   getOutputImage(cv_img_pub_.image);
   image_pub_.publish(cv_img_pub_.toImageMsg());
@@ -307,7 +309,7 @@ bool BallDetector::setParamCallback(ball_detector::SetParameters::Request &req, 
   return true;
 }
 
-bool BallDetector::getParamCallback(ball_detector::GetParameters::Request &req, ball_detector::GetParameters::Response &res)
+bool BallDetector:: getParamCallback(ball_detector::GetParameters::Request &req, ball_detector::GetParameters::Response &res)
 {
   res.returns.gaussian_blur_size = params_config_.gaussian_blur_size;
   res.returns.gaussian_blur_sigma = params_config_.gaussian_blur_sigma;
@@ -325,6 +327,80 @@ bool BallDetector::getParamCallback(ball_detector::GetParameters::Request &req, 
   res.returns.filter_v_max = params_config_.filter_threshold.v_max;
 
   return true;
+}
+
+void BallDetector::resetParameter()
+{
+
+  YAML::Node doc;
+
+  try
+  {
+    // load yaml
+    doc = YAML::LoadFile(default_setting_path_.c_str());
+
+    // parse
+    params_config_.gaussian_blur_size = doc["gaussian_blur_size"].as<int>();
+    params_config_.gaussian_blur_sigma = doc["gaussian_blur_sigma"].as<double>();
+    params_config_.canny_edge_th = doc["canny_edge_th"].as<double>();
+    params_config_.hough_accum_resolution = doc["hough_accum_resolution"].as<double>();
+    params_config_.min_circle_dist = doc["min_circle_dist"].as<double>();
+    params_config_.hough_accum_th = doc["hough_accum_th"].as<double>();
+    params_config_.min_radius = doc["min_radius"].as<int>();
+    params_config_.max_radius = doc["max_radius"].as<int>();
+    params_config_.filter_threshold.h_min = doc["filter_h_min"].as<int>();
+    params_config_.filter_threshold.h_max = doc["filter_h_max"].as<int>();
+    params_config_.filter_threshold.s_min = doc["filter_s_min"].as<int>();
+    params_config_.filter_threshold.s_max = doc["filter_s_max"].as<int>();
+    params_config_.filter_threshold.v_min = doc["filter_v_min"].as<int>();
+    params_config_.filter_threshold.v_max = doc["filter_v_max"].as<int>();
+    params_config_.use_second_filter = doc["use_second_filter"].as<bool>();
+    params_config_.filter2_threshold.h_min = doc["filter2_h_min"].as<int>();
+    params_config_.filter2_threshold.h_max = doc["filter2_h_max"].as<int>();
+    params_config_.filter2_threshold.s_min = doc["filter2_s_min"].as<int>();
+    params_config_.filter2_threshold.s_max = doc["filter2_s_max"].as<int>();
+    params_config_.filter2_threshold.v_min = doc["filter2_v_min"].as<int>();
+    params_config_.filter2_threshold.v_max = doc["filter2_v_max"].as<int>();
+    params_config_.ellipse_size = doc["ellipse_size"].as<int>();
+    params_config_.debug = doc["filter_debug"].as<bool>();
+
+    // gaussian_blur has to be odd number.
+    if (params_config_.gaussian_blur_size % 2 == 0)
+      params_config_.gaussian_blur_size -= 1;
+    if (params_config_.gaussian_blur_size <= 0)
+      params_config_.gaussian_blur_size = 1;
+
+    printConfig();
+    saveConfig();
+
+    publishParam();
+  } catch (const std::exception& e)
+  {
+    ROS_ERROR_STREAM("Failed to Get default parameters : " << default_setting_path_);
+    return;
+  }
+}
+
+void BallDetector::publishParam()
+{
+  ball_detector::BallDetectorParams params;
+
+  params.gaussian_blur_size = params_config_.gaussian_blur_size;
+  params.gaussian_blur_sigma = params_config_.gaussian_blur_sigma;
+  params.canny_edge_th = params_config_.canny_edge_th;
+  params.hough_accum_resolution = params_config_.hough_accum_resolution;
+  params.min_circle_dist = params_config_.min_circle_dist;
+  params.hough_accum_th = params_config_.hough_accum_th;
+  params.min_radius = params_config_.min_radius;
+  params.max_radius = params_config_.max_radius;
+  params.filter_h_min = params_config_.filter_threshold.h_min;
+  params.filter_h_max = params_config_.filter_threshold.h_max;
+  params.filter_s_min = params_config_.filter_threshold.s_min;
+  params.filter_s_max = params_config_.filter_threshold.s_max;
+  params.filter_v_min = params_config_.filter_threshold.v_min;
+  params.filter_v_max = params_config_.filter_threshold.v_max;
+
+  param_pub_.publish(params);
 }
 
 void BallDetector::printConfig()
