@@ -10,9 +10,9 @@ filter_h_min: 350
 filter_h_max: 20
 filter_s_min: 220
 filter_s_max: 255
-filter_v_min: 30
+filter_v_min: 80
 filter_v_max: 255
-use_second_filter: true
+use_second_filter: false
 filter2_h_min: 30
 filter2_h_max: 355
 filter2_s_min: 0
