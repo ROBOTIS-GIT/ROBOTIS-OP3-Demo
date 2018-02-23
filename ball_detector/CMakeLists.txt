@@ -8,6 +8,7 @@ project(ball_detector)
 # Packages
 ################################################################################
 find_package(catkin REQUIRED COMPONENTS
+  roslib
   cv_bridge
   geometry_msgs
   image_transport
