@@ -16,7 +16,11 @@
     
     <!-- sound player -->
     <node pkg="ros_madplay_player" type="ros_madplay_player" name="ros_madplay_player" output="screen"/>
-    
+    	
+    <!-- web setting -->
+    <node pkg="web_video_server" type="web_video_server" name="web_video_server" output="screen"/>
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
+	
     <!-- robotis op3 demo -->
     <node pkg="op3_demo" type="op_demo_node" name="op3_demo" output="screen">
       <param name="grass_demo" type="bool" value="False" />
