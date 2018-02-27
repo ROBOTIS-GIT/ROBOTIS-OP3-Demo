@@ -110,6 +110,8 @@ void ActionDemo::process()
       stopMP3();
       brakeAction();
 
+      play_status_ = ReadyAction;
+
       break;
     }
 
@@ -117,6 +119,8 @@ void ActionDemo::process()
     {
       stopMP3();
       stopAction();
+
+      play_status_ = ReadyAction;
 
       break;
     }

@@ -55,6 +55,7 @@ class ActionDemo : public OPDemo
     PlayAction = 1,
     PauseAction = 2,
     StopAction = 3,
+    ReadyAction = 4,
   };
 
   const int SPIN_RATE;
