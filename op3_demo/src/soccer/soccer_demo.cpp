@@ -208,7 +208,7 @@ void SoccerDemo::callbackThread()
   rgb_led_pub_ = nh.advertise<robotis_controller_msgs::SyncWriteItem>("/robotis/sync_write_item", 0);
 
   buttuon_sub_ = nh.subscribe("/robotis/open_cr/button", 1, &SoccerDemo::buttonHandlerCallback, this);
-  demo_command_sub_ = nh.subscribe("/ball_tracker/command", 1, &SoccerDemo::demoCommandCallback, this);
+  demo_command_sub_ = nh.subscribe("/robotis/demo_command", 1, &SoccerDemo::demoCommandCallback, this);
   imu_data_sub_ = nh.subscribe("/robotis/open_cr/imu", 1, &SoccerDemo::imuDataCallback, this);
 
   is_running_client_ = nh.serviceClient<op3_action_module_msgs::IsRunning>("/robotis/action/is_running");

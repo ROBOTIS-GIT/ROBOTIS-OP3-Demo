@@ -88,12 +88,14 @@ class ActionDemo : public OPDemo
 
   void actionSetNameCallback(const std_msgs::String::ConstPtr& msg);
   void buttonHandlerCallback(const std_msgs::String::ConstPtr& msg);
+  void demoCommandCallback(const std_msgs::String::ConstPtr &msg);
 
   ros::Publisher module_control_pub_;
   ros::Publisher motion_index_pub_;
   ros::Publisher play_sound_pub_;
 
   ros::Subscriber buttuon_sub_;
+  ros::Subscriber demo_command_sub_;
 
   ros::ServiceClient is_running_client_;
 

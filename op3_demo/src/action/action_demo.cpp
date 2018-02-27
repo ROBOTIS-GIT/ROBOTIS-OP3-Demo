@@ -37,6 +37,8 @@ ActionDemo::ActionDemo()
   std::string default_play_list = "default";
   play_list_name_ = nh.param<std::string>("action_script_play_list", default_play_list);
 
+  demo_command_sub_ = nh.subscribe("/robotis/demo_command", 1, &ActionDemo::demoCommandCallback, this);
+
   parseActionScript (script_path_);
 
   boost::thread queue_thread = boost::thread(boost::bind(&ActionDemo::callbackThread, this));
@@ -358,6 +360,21 @@ void ActionDemo::setModuleToDemo(const std::string &module_name)
 
   module_control_pub_.publish(control_msg);
   std::cout << "enable module : " << module_name << std::endl;
+}
+
+void ActionDemo::demoCommandCallback(const std_msgs::String::ConstPtr &msg)
+{
+  if (enable_ == false)
+    return;
+
+  if (msg->data == "start")
+  {
+    resumeProcess();
+  }
+  else if (msg->data == "stop")
+  {
+    pauseProcess();
+  }
 }
 
 } /* namespace robotis_op */

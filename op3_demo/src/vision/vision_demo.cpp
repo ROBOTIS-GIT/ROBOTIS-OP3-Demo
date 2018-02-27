@@ -141,31 +141,24 @@ void VisionDemo::buttonHandlerCallback(const std_msgs::String::ConstPtr& msg)
 
   if (msg->data == "start")
   {
-//    switch (play_status_)
-//      {
-//        case PlayAction:
-//        {
-//          pauseProcess();
-//          break;
-//        }
-//
-//        case PauseAction:
-//        {
-//          resumeProcess();
-//          break;
-//        }
-//
-//        case StopAction:
-//        {
-//          resumeProcess();
-//          break;
-//        }
-//
-//        default:
-//          break;
-//      }
+
   }
   else if (msg->data == "mode")
+  {
+
+  }
+}
+
+void VisionDemo::demoCommandCallback(const std_msgs::String::ConstPtr &msg)
+{
+  if (enable_ == false)
+    return;
+
+  if (msg->data == "start")
+  {
+
+  }
+  else if (msg->data == "stop")
   {
 
   }
