@@ -256,7 +256,7 @@ void buttonHandlerCallback(const std_msgs::String::ConstPtr& msg)
 
         case ActionDemo:
           playSound(default_mp3_path + "Interactive motion mode.mp3");
-          setLED(0x04);ball_tracker
+          setLED(0x04);
           break;
 
         default:
