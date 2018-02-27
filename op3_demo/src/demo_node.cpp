@@ -75,7 +75,7 @@ int main(int argc, char **argv)
   led_pub = nh.advertise<robotis_controller_msgs::SyncWriteItem>("/robotis/sync_write_item", 0);
   dxl_torque_pub = nh.advertise<std_msgs::String>("/robotis/dxl_torque", 0);
   ros::Subscriber buttuon_sub = nh.subscribe("/robotis/open_cr/button", 1, buttonHandlerCallback);
-  ros::Subscriber mode_command_sub = nh.subscribe("/robotis/command_mode", 1, demoModeCommandCallback);
+  ros::Subscriber mode_command_sub = nh.subscribe("/robotis/mode_command", 1, demoModeCommandCallback);
 
   default_mp3_path = ros::package::getPath("op3_demo") + "/Data/mp3/";
 
@@ -256,7 +256,7 @@ void buttonHandlerCallback(const std_msgs::String::ConstPtr& msg)
 
         case ActionDemo:
           playSound(default_mp3_path + "Interactive motion mode.mp3");
-          setLED(0x04);
+          setLED(0x04);ball_tracker
           break;
 
         default:
