@@ -42,7 +42,7 @@ SoccerDemo::SoccerDemo()
 
   ros::NodeHandle nh(ros::this_node::getName());
 
-  std::string default_path = ros::package::getPath("op3_gui_demo") + "/config/demo_config.yaml";
+  std::string default_path = ros::package::getPath("op3_gui_demo") + "/config/gui_config.yaml";
   std::string path = nh.param<std::string>("demo_config", default_path);
   parseJointNameFromYaml(path);
 
