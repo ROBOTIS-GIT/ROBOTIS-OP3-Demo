@@ -53,7 +53,7 @@ void ActionDemo::setDemoEnable()
 {
   setModuleToDemo("action_module");
 
-  usleep(10 * 1000);
+  usleep(100 * 1000);
 
   enable_ = true;
 

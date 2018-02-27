@@ -52,7 +52,7 @@ void VisionDemo::setDemoEnable()
 
   setModuleToDemo("head_control_module");
 
-  usleep(10 * 1000);
+  usleep(20 * 1000);
 
   enable_ = true;
   face_tracker_.startTracking();

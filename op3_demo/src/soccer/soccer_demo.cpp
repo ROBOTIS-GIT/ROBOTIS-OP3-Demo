@@ -414,7 +414,7 @@ void SoccerDemo::startSoccerMode()
 {
   setModuleToDemo("action_module");
 
-  usleep(10 * 1000);
+  usleep(100 * 1000);
 
   playMotion(WalkingReady);
 
@@ -422,7 +422,7 @@ void SoccerDemo::startSoccerMode()
 
   setBodyModuleToDemo("walking_module");
 
-  usleep(10 * 1000);
+  usleep(20 * 1000);
 
   ROS_INFO("Start Soccer Demo");
   on_following_ball_ = true;
