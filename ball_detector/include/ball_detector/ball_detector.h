@@ -26,7 +26,9 @@
 
 //ros dependencies
 #include <ros/ros.h>
+#include <ros/package.h>
 #include <std_msgs/Bool.h>
+#include <std_msgs/String.h>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/CameraInfo.h>
@@ -36,6 +38,8 @@
 #include "ball_detector/circleSetStamped.h"
 #include "ball_detector/ball_detector_config.h"
 #include "ball_detector/detectorParamsConfig.h"
+#include "ball_detector/GetParameters.h"
+#include "ball_detector/SetParameters.h"
 
 namespace robotis_op
 {
@@ -69,6 +73,12 @@ class BallDetector
 
   void dynParamCallback(ball_detector::detectorParamsConfig &config, uint32_t level);
   void enableCallback(const std_msgs::Bool::ConstPtr &msg);
+
+  void paramCommandCallback(const std_msgs::String::ConstPtr &msg);
+  bool setParamCallback(ball_detector::SetParameters::Request &req, ball_detector::SetParameters::Response &res);
+  bool getParamCallback(ball_detector::GetParameters::Request &req, ball_detector::GetParameters::Response &res);
+  void resetParameter();
+  void publishParam();
 
   void printConfig();
   void saveConfig();
@@ -111,6 +121,13 @@ class BallDetector
   DetectorConfig params_config_;
   std::string param_path_;
   bool has_path_;
+
+  // web setting
+  std::string default_setting_path_;
+  ros::Publisher param_pub_;
+  ros::Subscriber param_command_sub_;
+  ros::ServiceServer get_param_client_;
+  ros::ServiceServer set_param_client_;
 
   //flag indicating a new image has been received
   bool new_image_flag_;

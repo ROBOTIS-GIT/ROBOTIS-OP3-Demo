@@ -56,6 +56,7 @@ class VisionDemo : public OPDemo
 
   void buttonHandlerCallback(const std_msgs::String::ConstPtr& msg);
   void facePositionCallback(const std_msgs::Int32MultiArray::ConstPtr &msg);
+  void demoCommandCallback(const std_msgs::String::ConstPtr &msg);
 
   void setModuleToDemo(const std::string &module_name);
 
