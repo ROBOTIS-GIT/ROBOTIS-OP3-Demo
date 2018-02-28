@@ -41,6 +41,8 @@ void setLED(int led);
 bool checkManagerRunning(std::string& manager_name);
 void dxlTorqueChecker();
 
+void demoModeCommandCallback(const std_msgs::String::ConstPtr &msg);
+
 const int SPIN_RATE = 30;
 const bool DEBUG_PRINT = false;
 
@@ -73,6 +75,7 @@ int main(int argc, char **argv)
   led_pub = nh.advertise<robotis_controller_msgs::SyncWriteItem>("/robotis/sync_write_item", 0);
   dxl_torque_pub = nh.advertise<std_msgs::String>("/robotis/dxl_torque", 0);
   ros::Subscriber buttuon_sub = nh.subscribe("/robotis/open_cr/button", 1, buttonHandlerCallback);
+  ros::Subscriber mode_command_sub = nh.subscribe("/robotis/mode_command", 1, demoModeCommandCallback);
 
   default_mp3_path = ros::package::getPath("op3_demo") + "/Data/mp3/";
 
@@ -313,3 +316,55 @@ void dxlTorqueChecker()
 
   dxl_torque_pub.publish(check_msg);
 }
+
+void demoModeCommandCallback(const std_msgs::String::ConstPtr &msg)
+{
+  // In demo mode
+  if (current_status != Ready)
+  {
+    if (msg->data == "ready")
+    {
+      // go to mode selection status
+      desired_status = Ready;
+      apply_desired = true;
+
+      playSound(default_mp3_path + "Demonstration ready mode.mp3");
+      setLED(0x01 | 0x02 | 0x04);
+    }
+  }
+  // In ready mode
+  else
+  {
+    if(msg->data == "soccer")
+    {
+      desired_status = SoccerDemo;
+      apply_desired = true;
+
+      // play sound
+      dxlTorqueChecker();
+      playSound(default_mp3_path + "Start soccer demonstration.mp3");
+      ROS_INFO_COND(DEBUG_PRINT, "= Start Demo Mode : %d", desired_status);
+    }
+    else if(msg->data == "vision")
+    {
+      desired_status = VisionDemo;
+      apply_desired = true;
+
+      // play sound
+      dxlTorqueChecker();
+      playSound(default_mp3_path + "Start vision processing demonstration.mp3");
+      ROS_INFO_COND(DEBUG_PRINT, "= Start Demo Mode : %d", desired_status);
+    }
+    else if(msg->data == "action")
+    {
+      desired_status = ActionDemo;
+      apply_desired = true;
+
+      // play sound
+      dxlTorqueChecker();
+      playSound(default_mp3_path + "Start motion demonstration.mp3");
+      ROS_INFO_COND(DEBUG_PRINT, "= Start Demo Mode : %d", desired_status);
+    }
+  }
+}
+
