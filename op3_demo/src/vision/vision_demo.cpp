@@ -55,6 +55,11 @@ void VisionDemo::setDemoEnable()
   usleep(20 * 1000);
 
   enable_ = true;
+
+  std_msgs::Bool command;
+  command.data = enable_;
+  face_tracking_command_pub_.publish(command);
+
   face_tracker_.startTracking();
 
   ROS_INFO("Start Vision Demo");
@@ -68,6 +73,10 @@ void VisionDemo::setDemoDisable()
   is_tracking_ = false;
   tracking_status_ = FaceTracker::Waiting;
   enable_ = false;
+
+  std_msgs::Bool command;
+  command.data = enable_;
+  face_tracking_command_pub_.publish(command);
 }
 
 void VisionDemo::process()
@@ -95,7 +104,7 @@ void VisionDemo::process()
     tracking_status_ = tracking_status;
 
   //is_tracking_ = is_tracked;
-  std::cout << "Tracking : " << tracking_status << std::endl;
+  //std::cout << "Tracking : " << tracking_status << std::endl;
 }
 
 void VisionDemo::processThread()
@@ -122,6 +131,7 @@ void VisionDemo::callbackThread()
   module_control_pub_ = nh.advertise<std_msgs::String>("/robotis/enable_ctrl_module", 0);
   motion_index_pub_ = nh.advertise<std_msgs::Int32>("/robotis/action/page_num", 0);
   rgb_led_pub_ = nh.advertise<robotis_controller_msgs::SyncWriteItem>("/robotis/sync_write_item", 0);
+  face_tracking_command_pub_ = nh.advertise<std_msgs::Bool>("/face_tracking/command", 0);
 
   buttuon_sub_ = nh.subscribe("/robotis/open_cr/button", 1, &VisionDemo::buttonHandlerCallback, this);
   faceCoord_sub_ = nh.subscribe("/faceCoord", 1, &VisionDemo::facePositionCallback, this);

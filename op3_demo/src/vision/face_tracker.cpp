@@ -34,8 +34,7 @@ FaceTracker::FaceTracker()
   head_scan_pub_ = nh_.advertise<std_msgs::String>("/robotis/head_control/scan_command", 0);
 
   face_position_sub_ = nh_.subscribe("/face_position", 1, &FaceTracker::facePositionCallback, this);
-  face_tracking_command_sub_ = nh_.subscribe("/face_tracker/command", 1, &FaceTracker::faceTrackerCommandCallback,
-                                             this);
+  //face_tracking_command_sub_ = nh_.subscribe("/robotis/demo_command", 1, &FaceTracker::faceTrackerCommandCallback, this);
 }
 
 FaceTracker::~FaceTracker()
@@ -73,12 +72,14 @@ void FaceTracker::faceTrackerCommandCallback(const std_msgs::String::ConstPtr &m
 void FaceTracker::startTracking()
 {
   on_tracking_ = true;
+
   ROS_INFO("Start Face tracking");
 }
 
 void FaceTracker::stopTracking()
 {
   on_tracking_ = false;
+
   ROS_INFO("Stop Face tracking");
 }
 

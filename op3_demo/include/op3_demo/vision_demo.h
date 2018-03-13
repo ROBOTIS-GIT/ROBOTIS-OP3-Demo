@@ -64,7 +64,8 @@ class VisionDemo : public OPDemo
 
   ros::Publisher module_control_pub_;
   ros::Publisher motion_index_pub_;
-  ros::Publisher rgb_led_pub_;
+  ros::Publisher rgb_led_pub_;  
+  ros::Publisher face_tracking_command_pub_;
 
   ros::Subscriber buttuon_sub_;
   ros::Subscriber faceCoord_sub_;

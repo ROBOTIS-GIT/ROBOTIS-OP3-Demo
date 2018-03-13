@@ -24,6 +24,7 @@
 
 #include <ros/ros.h>
 #include <ros/package.h>
+#include <std_msgs/Bool.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Int32.h>
 #include <sensor_msgs/JointState.h>

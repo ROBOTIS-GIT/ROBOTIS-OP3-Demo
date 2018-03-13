@@ -17,5 +17,6 @@
         <param name="displayed_Image" type="int" value="0" />
         <!-- <param name="publish" type="int" value="2" /> -->
         <param name="publish" type="int" value="3" />
+		<param name="start_condition" type="bool" value="false" />
   </node>
 </launch>

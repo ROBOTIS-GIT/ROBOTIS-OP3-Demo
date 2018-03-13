@@ -193,6 +193,10 @@ int main(int argc, char **argv)
 
     //relax to fit output rate
     loop_rate.sleep();
+
+    // for debug
+    if (checkManagerRunning(manager_name) == false)
+      return 0;
   }
 
   //exit program
