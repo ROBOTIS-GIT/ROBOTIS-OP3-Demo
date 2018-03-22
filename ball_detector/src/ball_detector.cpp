@@ -125,14 +125,25 @@ void BallDetector::process()
 
   if (cv_img_ptr_sub_ != NULL)
   {
-    //sets input image
-    setInputImage(cv_img_ptr_sub_->image);
+    cv::Mat img_hsv, img_filtered;
 
-    // test image filtering
-    filterImage();
+    // set input image
+    setInputImage(cv_img_ptr_sub_->image, img_hsv);
+
+    // image filtering
+    filterImage(img_hsv, img_filtered);
 
     //detect circles
-    houghDetection(this->img_encoding_);
+    houghDetection2(img_filtered);
+
+//    // set input image
+//    setInputImage(cv_img_ptr_sub_->image);
+
+//    // image filtering
+//    filterImage();
+
+//    //detect circles
+//    houghDetection(this->img_encoding_);
   }
 }
 
@@ -184,8 +195,8 @@ void BallDetector::publishCircles()
   // left(-1), right(+1)
   for (int idx = 0; idx < circles_.size(); idx++)
   {
-    circles_msg_.circles[idx].x = circles_[idx][0] / in_image_.cols * 2 - 1;    // x (-1 ~ 1)
-    circles_msg_.circles[idx].y = circles_[idx][1] / in_image_.rows * 2 - 1;    // y (-1 ~ 1)
+    circles_msg_.circles[idx].x = circles_[idx][0] / out_image_.cols * 2 - 1;    // x (-1 ~ 1)
+    circles_msg_.circles[idx].y = circles_[idx][1] / out_image_.rows * 2 - 1;    // y (-1 ~ 1)
     circles_msg_.circles[idx].z = circles_[idx][2];    // radius
   }
 
@@ -482,6 +493,14 @@ void BallDetector::setInputImage(const cv::Mat & inIm)
     out_image_ = in_image_.clone();
 }
 
+void BallDetector::setInputImage(const cv::Mat & inIm, cv::Mat &in_filter_img)
+{
+  cv::cvtColor(inIm, in_filter_img, cv::COLOR_RGB2HSV);
+
+  if (params_config_.debug == false)
+    out_image_ = inIm.clone();
+}
+
 void BallDetector::getOutputImage(cv::Mat & outIm)
 {
   this->drawOutputImage();
@@ -520,6 +539,42 @@ void BallDetector::filterImage()
   mophology(img_filtered, img_filtered, params_config_.ellipse_size);
 
   cv::cvtColor(img_filtered, in_image_, cv::COLOR_GRAY2RGB);
+}
+
+void BallDetector::filterImage(const cv::Mat &in_filter_img, cv::Mat &out_filter_img)
+{
+  if (!in_filter_img.data)
+    return;
+
+  inRangeHsv(in_filter_img, params_config_.filter_threshold, out_filter_img);
+
+  // mophology : open and close
+  mophology(out_filter_img, out_filter_img, params_config_.ellipse_size);
+
+  if (params_config_.use_second_filter == true)
+  {
+    // mask
+    cv::Mat img_mask;
+
+    // check hsv range
+    cv::Mat img_filtered2;
+    inRangeHsv(in_filter_img, params_config_.filter2_threshold, img_filtered2);
+
+    makeFilterMaskFromBall(out_filter_img, img_mask);
+    cv::bitwise_and(img_filtered2, img_mask, img_filtered2);
+
+    // or
+    cv::bitwise_or(out_filter_img, img_filtered2, out_filter_img);
+  }
+
+  mophology(out_filter_img, out_filter_img, params_config_.ellipse_size);
+
+//  cv::cvtColor(img_filtered, in_image_, cv::COLOR_GRAY2RGB);
+
+  //draws results to output Image
+  if (params_config_.debug == true)
+    cv::cvtColor(out_filter_img, out_image_, cv::COLOR_GRAY2RGB);
+//    out_image_ = in_image_.clone();
 }
 
 void BallDetector::makeFilterMask(const cv::Mat &source_img, cv::Mat &mask_img, int range)
@@ -707,6 +762,68 @@ void BallDetector::houghDetection(const unsigned int imgEncoding)
   }
 }
 
+void BallDetector::houghDetection2(const cv::Mat &input_hough)
+{
+//  cv::Mat gray_image;
+  std::vector<cv::Vec3f> circles_current;
+  std::vector<cv::Vec3f> prev_circles = circles_;
+
+  //clear previous circles
+  circles_.clear();
+
+  // If input image is RGB, convert it to gray
+//  if (imgEncoding == IMG_RGB8)
+//    cv::cvtColor(input_hough, gray_image, CV_RGB2GRAY);
+
+
+  //Reduce the noise so we avoid false circle detection
+  cv::GaussianBlur(input_hough, input_hough,
+                   cv::Size(params_config_.gaussian_blur_size, params_config_.gaussian_blur_size),
+                   params_config_.gaussian_blur_sigma);
+
+  double hough_accum_th = params_config_.hough_accum_th;
+
+
+  //Apply the Hough Transform to find the circles
+  cv::HoughCircles(input_hough, circles_current, CV_HOUGH_GRADIENT, params_config_.hough_accum_resolution,
+                   params_config_.min_circle_dist, params_config_.canny_edge_th, hough_accum_th,
+                   params_config_.min_radius, params_config_.max_radius);
+
+  if (circles_current.size() == 0)
+    not_found_count_ += 1;
+  else
+    not_found_count_ = 0;
+
+  double alpha = 0.2;
+
+  for (int ix = 0; ix < circles_current.size(); ix++)
+  {
+    cv::Point2d center = cv::Point(circles_current[ix][0], circles_current[ix][1]);
+    double radius = circles_current[ix][2];
+
+    for (int prev_ix = 0; prev_ix < prev_circles.size(); prev_ix++)
+    {
+      cv::Point2d prev_center = cv::Point(prev_circles[prev_ix][0], prev_circles[prev_ix][1]);
+      double prev_radius = prev_circles[prev_ix][2];
+
+      cv::Point2d diff = center - prev_center;
+      double radius_th = std::max(radius, prev_radius) * 0.75;
+
+      if (sqrt(diff.dot(diff)) < radius_th)
+      {
+        if (abs(radius - prev_radius) < radius_th)
+        {
+          circles_current[ix] = circles_current[ix] * alpha + prev_circles[prev_ix] * (1 - alpha);
+        }
+
+        break;
+      }
+    }
+
+    circles_.push_back(circles_current[ix]);
+  }
+}
+
 void BallDetector::drawOutputImage()
 {
   cv::Point center_position;
@@ -714,8 +831,8 @@ void BallDetector::drawOutputImage()
   size_t ii;
 
   //draws results to output Image
-  if (params_config_.debug == true)
-    out_image_ = in_image_.clone();
+//  if (params_config_.debug == true)
+//    out_image_ = in_image_.clone();
 
   for (ii = 0; ii < circles_.size(); ii++)
   {

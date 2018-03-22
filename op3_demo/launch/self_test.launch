@@ -17,7 +17,14 @@
     <!-- sound player -->
     <node pkg="ros_madplay_player" type="ros_madplay_player" name="ros_madplay_player" output="screen"/>
     
+    <!-- web setting -->
+    <include file="$(find op3_web_setting_tool)/launch/web_setting_server.launch" />
+    
     <!-- robotis op3 self test demo -->
-    <node pkg="op3_demo" type="self_test_node" name="op3_self_test" output="screen"/>
+    <node pkg="op3_demo" type="self_test_node" name="op3_self_test" output="screen">
+      <param name="grass_demo" type="bool" value="False" />
+      <param name="p_gain" value="0.45" />
+      <param name="d_gain" value="0.045" />
+    </node>
 </launch>
 

@@ -39,6 +39,7 @@ int main(int argc, char **argv)
       detector.process();
       detector.publishImage();
       detector.publishCircles();
+
     }
 
     //execute pending callbacks

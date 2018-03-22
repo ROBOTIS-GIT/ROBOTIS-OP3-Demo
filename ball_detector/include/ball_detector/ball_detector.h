@@ -83,13 +83,16 @@ class BallDetector
   void printConfig();
   void saveConfig();
   void setInputImage(const cv::Mat & inIm);
+  void setInputImage(const cv::Mat & inIm, cv::Mat &in_filter_img);
   void getOutputImage(cv::Mat & outIm);
   void filterImage();
+  void filterImage(const cv::Mat &in_filter_img, cv::Mat &out_filter_img);
   void makeFilterMask(const cv::Mat &source_img, cv::Mat &mask_img, int range);
   void makeFilterMaskFromBall(const cv::Mat &source_img, cv::Mat &mask_img);
   void inRangeHsv(const cv::Mat &input_img, const HsvFilter &filter_value, cv::Mat &output_img);
   void mophology(const cv::Mat &intput_img, cv::Mat &output_img, int ellipse_size);
   void houghDetection(const unsigned int imgEncoding);
+  void houghDetection2(const cv::Mat &input_hough);
   void drawOutputImage();
 
   //ros node handle

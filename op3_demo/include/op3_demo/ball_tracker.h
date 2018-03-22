@@ -26,6 +26,7 @@
 #include <ros/package.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Int32.h>
+//#include <std_msgs/Float64MultiArray.h>
 #include <sensor_msgs/JointState.h>
 
 #include "robotis_controller_msgs/JointCtrlModule.h"
@@ -39,7 +40,7 @@ namespace robotis_op
 // head tracking for looking the ball
 class BallTracker
 {
- public:
+public:
   enum TrackingStatus
   {
     NotFound = -1,
@@ -72,7 +73,7 @@ class BallTracker
     return current_ball_bottom_;
   }
 
- protected:
+protected:
   const double FOV_WIDTH;
   const double FOV_HEIGHT;
   const int NOT_FOUND_THRESHOLD;
@@ -92,6 +93,8 @@ class BallTracker
   ros::Publisher head_joint_pub_;
   ros::Publisher head_scan_pub_;
 
+  //  ros::Publisher error_pub_;
+
   ros::Publisher motion_index_pub_;
 
   ros::Subscriber ball_position_sub_;
@@ -107,7 +110,9 @@ class BallTracker
   bool on_tracking_;
   double current_ball_pan_, current_ball_tilt_;
   double current_ball_bottom_;
+  double x_error_sum_, y_error_sum_;
   ros::Time prev_time_;
+  double p_gain_, d_gain_, i_gain_;
 
 };
 }

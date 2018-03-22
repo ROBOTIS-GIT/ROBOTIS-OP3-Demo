@@ -53,8 +53,6 @@ void ActionDemo::setDemoEnable()
 {
   setModuleToDemo("action_module");
 
-  usleep(100 * 1000);
-
   enable_ = true;
 
   ROS_INFO_COND(DEBUG_PRINT, "Start ActionScript Demo");
@@ -69,7 +67,7 @@ void ActionDemo::setDemoDisable()
   stopProcess();
 
   enable_ = false;
-
+  ROS_WARN("Set Action demo disable");
   play_list_.resize(0);
 }
 
@@ -181,6 +179,7 @@ void ActionDemo::callbackThread()
   buttuon_sub_ = nh.subscribe("/robotis/open_cr/button", 1, &ActionDemo::buttonHandlerCallback, this);
 
   is_running_client_ = nh.serviceClient<op3_action_module_msgs::IsRunning>("/robotis/action/is_running");
+  set_joint_module_client_ = nh.serviceClient<robotis_controller_msgs::SetModule>("/robotis/set_present_ctrl_modules");
 
   while (nh.ok())
   {
@@ -359,11 +358,22 @@ void ActionDemo::buttonHandlerCallback(const std_msgs::String::ConstPtr& msg)
 
 void ActionDemo::setModuleToDemo(const std::string &module_name)
 {
-  std_msgs::String control_msg;
-  control_msg.data = "action_module";
+  callServiceSettingModule(module_name);
+  ROS_INFO_STREAM("enable module : " << module_name);
+}
 
-  module_control_pub_.publish(control_msg);
-  std::cout << "enable module : " << module_name << std::endl;
+void ActionDemo::callServiceSettingModule(const std::string &module_name)
+{
+    robotis_controller_msgs::SetModule set_module_srv;
+    set_module_srv.request.module_name = module_name;
+
+    if (set_joint_module_client_.call(set_module_srv) == false)
+    {
+      ROS_ERROR("Failed to set module");
+      return;
+    }
+
+    return ;
 }
 
 void ActionDemo::demoCommandCallback(const std_msgs::String::ConstPtr &msg)

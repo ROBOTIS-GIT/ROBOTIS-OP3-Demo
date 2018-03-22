@@ -23,7 +23,7 @@ namespace robotis_op
 
 BallFollower::BallFollower()
     : nh_(ros::this_node::getName()),
-      FOV_WIDTH(26.4 * M_PI / 180),
+      FOV_WIDTH(35.2 * M_PI / 180),
       FOV_HEIGHT(21.6 * M_PI / 180),
       count_not_found_(0),
       count_to_kick_(0),
@@ -216,7 +216,7 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
                          "head tilt : " << (current_tilt_ * 180 / M_PI) << " | ball tilt : " << (y_angle * 180 / M_PI));
     ROS_INFO_STREAM_COND(DEBUG_PRINT, "foot to kick : " << accum_ball_position_);
 
-    ROS_INFO("In range [%d]", count_to_kick_);
+    ROS_INFO("In range [%d | %d]", count_to_kick_, accum_ball_position_);
 
     if (count_to_kick_ > 20)
     {

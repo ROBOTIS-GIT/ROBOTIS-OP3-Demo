@@ -29,6 +29,7 @@
 
 #include "op3_demo/op_demo.h"
 #include "robotis_controller_msgs/JointCtrlModule.h"
+#include "robotis_controller_msgs/SetModule.h"
 #include "op3_action_module_msgs/IsRunning.h"
 
 namespace robotis_op
@@ -86,7 +87,7 @@ class ActionDemo : public OPDemo
   bool isActionRunning();
 
   void setModuleToDemo(const std::string &module_name);
-
+  void callServiceSettingModule(const std::string &module_name);
   void actionSetNameCallback(const std_msgs::String::ConstPtr& msg);
   void buttonHandlerCallback(const std_msgs::String::ConstPtr& msg);
   void demoCommandCallback(const std_msgs::String::ConstPtr &msg);
@@ -99,6 +100,7 @@ class ActionDemo : public OPDemo
   ros::Subscriber demo_command_sub_;
 
   ros::ServiceClient is_running_client_;
+  ros::ServiceClient set_joint_module_client_;
 
   std::map<int, std::string> action_sound_table_;
   std::vector<int> play_list_;

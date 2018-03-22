@@ -22,22 +22,32 @@ namespace robotis_op
 {
 
 BallTracker::BallTracker()
-    : nh_(ros::this_node::getName()),
-      FOV_WIDTH(26.4 * M_PI / 180),
-      FOV_HEIGHT(21.6 * M_PI / 180),
-      NOT_FOUND_THRESHOLD(50),
-      WAITING_THRESHOLD(5),
-      use_head_scan_(true),
-      count_not_found_(0),
-      on_tracking_(false),
-      current_ball_pan_(0),
-      current_ball_tilt_(0),
-      current_ball_bottom_(0),
-      tracking_status_(NotFound),
-      DEBUG_PRINT(false)
+  : nh_(ros::this_node::getName()),
+    FOV_WIDTH(35.2 * M_PI / 180),
+    FOV_HEIGHT(21.6 * M_PI / 180),
+    NOT_FOUND_THRESHOLD(50),
+    WAITING_THRESHOLD(5),
+    use_head_scan_(true),
+    count_not_found_(0),
+    on_tracking_(false),
+    current_ball_pan_(0),
+    current_ball_tilt_(0),
+    x_error_sum_(0),
+    y_error_sum_(0),
+    current_ball_bottom_(0),
+    tracking_status_(NotFound),
+    DEBUG_PRINT(false)
 {
+  ros::NodeHandle param_nh("~");
+  p_gain_ = param_nh.param("p_gain", 0.4);
+  i_gain_ = param_nh.param("i_gain", 0.0);
+  d_gain_ = param_nh.param("d_gain", 0.0);
+
+  ROS_INFO_STREAM("Ball tracking Gain : " << p_gain_ << ", " << i_gain_ << ", " << d_gain_);
+
   head_joint_pub_ = nh_.advertise<sensor_msgs::JointState>("/robotis/head_control/set_joint_states_offset", 0);
   head_scan_pub_ = nh_.advertise<std_msgs::String>("/robotis/head_control/scan_command", 0);
+  //  error_pub_ = nh_.advertise<std_msgs::Float64MultiArray>("/ball_tracker/errors", 0);
 
   ball_position_sub_ = nh_.subscribe("/ball_detector_node/circle_set", 1, &BallTracker::ballPositionCallback, this);
   ball_tracking_command_sub_ = nh_.subscribe("/ball_tracker/command", 1, &BallTracker::ballTrackerCommandCallback,
@@ -90,9 +100,10 @@ void BallTracker::stopTracking()
   on_tracking_ = false;
   ROS_INFO_COND(DEBUG_PRINT, "Stop Ball tracking");
 
-  double x_error = -atan(ball_position_.x * tan(FOV_WIDTH));
-  double y_error = -atan(ball_position_.y * tan(FOV_HEIGHT));
-  publishHeadJoint(x_error, y_error);
+  current_ball_pan_ = 0;
+  current_ball_tilt_ = 0;
+  x_error_sum_ = 0;
+  y_error_sum_ = 0;
 }
 
 void BallTracker::setUsingHeadScan(bool use_scan)
@@ -147,24 +158,26 @@ int BallTracker::processTracking()
 
   switch (tracking_status)
   {
-    case NotFound:
-      tracking_status_ = tracking_status;
-      return tracking_status;
+  case NotFound:
+    tracking_status_ = tracking_status;
+    current_ball_pan_ = 0;
+    current_ball_tilt_ = 0;
+    x_error_sum_ = 0;
+    y_error_sum_ = 0;
+    return tracking_status;
 
-    case Waiting:
-      x_error = current_ball_pan_ * 0.7;
-      y_error = current_ball_tilt_ * 0.7;
-      ball_size = current_ball_bottom_;
-      break;
+  case Waiting:
+    tracking_status_ = tracking_status;
+    return tracking_status;
 
-    case Found:
-      x_error = -atan(ball_position_.x * tan(FOV_WIDTH));
-      y_error = -atan(ball_position_.y * tan(FOV_HEIGHT));
-      ball_size = ball_position_.z;
-      break;
+  case Found:
+    x_error = -atan(ball_position_.x * tan(FOV_WIDTH));
+    y_error = -atan(ball_position_.y * tan(FOV_HEIGHT));
+    ball_size = ball_position_.z;
+    break;
 
-    default:
-      break;
+  default:
+    break;
   }
 
   ROS_INFO_STREAM_COND(DEBUG_PRINT, "--------------------------------------------------------------");
@@ -176,21 +189,34 @@ int BallTracker::processTracking()
   double delta_time = dur.nsec * 0.000000001 + dur.sec;
   prev_time_ = curr_time;
 
-  // double p_gain = 0.7, d_gain = 0.05;
-  double p_gain = 0.75, d_gain = 0.04;
   double x_error_diff = (x_error - current_ball_pan_) / delta_time;
   double y_error_diff = (y_error - current_ball_tilt_) / delta_time;
-  double x_error_target = x_error * p_gain + x_error_diff * d_gain;
-  double y_error_target = y_error * p_gain + y_error_diff * d_gain;
+  x_error_sum_ += x_error;
+  y_error_sum_ += y_error;
+  double x_error_target = x_error * p_gain_ + x_error_diff * d_gain_ + x_error_sum_ * i_gain_;
+  double y_error_target = y_error * p_gain_ + y_error_diff * d_gain_ + y_error_sum_ * i_gain_;
 
-  ROS_INFO_STREAM_COND(DEBUG_PRINT, "--------------------------------------------------------------");
+  //  std_msgs::Float64MultiArray x_error_msg;
+  //  x_error_msg.data.push_back(x_error);
+  //  x_error_msg.data.push_back(x_error_diff);
+  //  x_error_msg.data.push_back(x_error_sum_);
+  //  x_error_msg.data.push_back(x_error * p_gain_);
+  //  x_error_msg.data.push_back(x_error_diff * d_gain_);
+  //  x_error_msg.data.push_back(x_error_sum_ * i_gain_);
+  //  x_error_msg.data.push_back(x_error_target);
+  //  error_pub_.publish(x_error_msg);
+
+  ROS_INFO_STREAM_COND(DEBUG_PRINT, "------------------------  " << tracking_status << "  --------------------------------------");
   ROS_INFO_STREAM_COND(DEBUG_PRINT, "error         : " << (x_error * 180 / M_PI) << " | " << (y_error * 180 / M_PI));
   ROS_INFO_STREAM_COND(
-      DEBUG_PRINT,
-      "error_diff    : " << (x_error_diff * 180 / M_PI) << " | " << (y_error_diff * 180 / M_PI) << " | " << delta_time);
+        DEBUG_PRINT,
+        "error_diff    : " << (x_error_diff * 180 / M_PI) << " | " << (y_error_diff * 180 / M_PI) << " | " << delta_time);
   ROS_INFO_STREAM_COND(
-      DEBUG_PRINT,
-      "error_target  : " << (x_error_target * 180 / M_PI) << " | " << (y_error_target * 180 / M_PI) << " | P : " << p_gain << " | D : " << d_gain);
+        DEBUG_PRINT,
+        "error_sum    : " << (x_error_sum_ * 180 / M_PI) << " | " << (y_error_sum_ * 180 / M_PI));
+  ROS_INFO_STREAM_COND(
+        DEBUG_PRINT,
+        "error_target  : " << (x_error_target * 180 / M_PI) << " | " << (y_error_target * 180 / M_PI) << " | P : " << p_gain_ << " | D : " << d_gain_ << " | time : " << delta_time);
 
   // move head joint
   publishHeadJoint(x_error_target, y_error_target);
@@ -201,7 +227,6 @@ int BallTracker::processTracking()
   current_ball_bottom_ = ball_size;
 
   ball_position_.z = 0;
-  //count_not_found_ = 0;
 
   tracking_status_ = tracking_status;
   return tracking_status;
