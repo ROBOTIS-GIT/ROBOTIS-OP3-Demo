@@ -22,20 +22,20 @@ namespace robotis_op
 {
 
 SoccerDemo::SoccerDemo()
-    : FALL_FORWARD_LIMIT(60),
-      FALL_BACK_LIMIT(-60),
-      SPIN_RATE(30),
-      DEBUG_PRINT(false),
-      wait_count_(0),
-      on_following_ball_(false),
-      restart_soccer_(false),
-      start_following_(false),
-      stop_following_(false),
-      stop_fallen_check_(false),
-      robot_status_(Waited),
-      stand_state_(Stand),
-      tracking_status_(BallTracker::Waiting),
-      present_pitch_(0)
+  : FALL_FORWARD_LIMIT(60),
+    FALL_BACK_LIMIT(-60),
+    SPIN_RATE(30),
+    DEBUG_PRINT(false),
+    wait_count_(0),
+    on_following_ball_(false),
+    restart_soccer_(false),
+    start_following_(false),
+    stop_following_(false),
+    stop_fallen_check_(false),
+    robot_status_(Waited),
+    stand_state_(Stand),
+    tracking_status_(BallTracker::Waiting),
+    present_pitch_(0)
 {
   //init ros
   enable_ = false;
@@ -66,8 +66,6 @@ void SoccerDemo::setDemoEnable()
 
 void SoccerDemo::setDemoDisable()
 {
-  setModuleToDemo("base_module");
-
   // handle disable procedure
   ball_tracker_.stopTracking();
   ball_follower_.stopFollowing();
@@ -85,8 +83,10 @@ void SoccerDemo::setDemoDisable()
 
 void SoccerDemo::process()
 {
+  if(enable_ == false)
+    return;
+
   // ball tracking
-  bool is_tracked;
   int tracking_status;
 
   tracking_status = ball_tracker_.processTracking();
@@ -100,9 +100,6 @@ void SoccerDemo::process()
 
     wait_count_ = 1 * SPIN_RATE;
   }
-
-  //for debug
-  //return;
 
   // check to stop
   if (stop_following_ == true)
@@ -121,20 +118,20 @@ void SoccerDemo::process()
     {
       switch(tracking_status)
       {
-        case BallTracker::Found:
-          ball_follower_.processFollowing(ball_tracker_.getPanOfBall(), ball_tracker_.getTiltOfBall(), 0.0);
-          if(tracking_status_ != tracking_status)
-            setRGBLED(0x1F, 0x1F, 0x1F);
-          break;
+      case BallTracker::Found:
+        ball_follower_.processFollowing(ball_tracker_.getPanOfBall(), ball_tracker_.getTiltOfBall(), 0.0);
+        if(tracking_status_ != tracking_status)
+          setRGBLED(0x1F, 0x1F, 0x1F);
+        break;
 
-        case BallTracker::NotFound:
-          ball_follower_.waitFollowing();
-          if(tracking_status_ != tracking_status)
-            setRGBLED(0, 0, 0);
-          break;
+      case BallTracker::NotFound:
+        ball_follower_.waitFollowing();
+        if(tracking_status_ != tracking_status)
+          setRGBLED(0, 0, 0);
+        break;
 
-        default:
-          break;
+      default:
+        break;
       }
 
       if(tracking_status != tracking_status_)
@@ -144,32 +141,32 @@ void SoccerDemo::process()
     // check fallen states
     switch (stand_state_)
     {
-      case Stand:
+    case Stand:
+    {
+      // check restart soccer
+      if (restart_soccer_ == true)
       {
-        // check restart soccer
-        if (restart_soccer_ == true)
-        {
-          restart_soccer_ = false;
-          startSoccerMode();
-          break;
-        }
-
-        // check states for kick
-        int ball_position = ball_follower_.getBallPosition();
-        if (ball_position != robotis_op::BallFollower::NotFound)
-        {
-          ball_follower_.stopFollowing();
-          handleKick(ball_position);
-        }
+        restart_soccer_ = false;
+        startSoccerMode();
         break;
       }
-        // fallen state : Fallen_Forward, Fallen_Behind
-      default:
+
+      // check states for kick
+      int ball_position = ball_follower_.getBallPosition();
+      if (ball_position != robotis_op::BallFollower::NotFound)
       {
         ball_follower_.stopFollowing();
-        handleFallen(stand_state_);
-        break;
+        handleKick(ball_position);
       }
+      break;
+    }
+      // fallen state : Fallen_Forward, Fallen_Behind
+    default:
+    {
+      ball_follower_.stopFollowing();
+      handleFallen(stand_state_);
+      break;
+    }
     }
   }
   else
@@ -212,6 +209,7 @@ void SoccerDemo::callbackThread()
   imu_data_sub_ = nh.subscribe("/robotis/open_cr/imu", 1, &SoccerDemo::imuDataCallback, this);
 
   is_running_client_ = nh.serviceClient<op3_action_module_msgs::IsRunning>("/robotis/action/is_running");
+  set_joint_module_client_ = nh.serviceClient<robotis_controller_msgs::SetJointModule>("/robotis/set_present_joint_ctrl_modules");
 
   while (nh.ok())
   {
@@ -252,12 +250,15 @@ void SoccerDemo::setBodyModuleToDemo(const std::string &body_module, bool with_h
   if (control_msg.joint_name.size() == 0)
     return;
 
-  module_control_pub_.publish(control_msg);
+  callServiceSettingModule(control_msg);
   std::cout << "enable module of body : " << body_module << std::endl;
 }
 
 void SoccerDemo::setModuleToDemo(const std::string &module_name)
 {
+  if(enable_ == false)
+    return;
+
   robotis_controller_msgs::JointCtrlModule control_msg;
   std::map<int, std::string>::iterator joint_iter;
 
@@ -271,8 +272,23 @@ void SoccerDemo::setModuleToDemo(const std::string &module_name)
   if (control_msg.joint_name.size() == 0)
     return;
 
-  module_control_pub_.publish(control_msg);
+  callServiceSettingModule(control_msg);
   std::cout << "enable module : " << module_name << std::endl;
+}
+
+void SoccerDemo::callServiceSettingModule(const robotis_controller_msgs::JointCtrlModule &modules)
+{
+  robotis_controller_msgs::SetJointModule set_joint_srv;
+  set_joint_srv.request.joint_name = modules.joint_name;
+  set_joint_srv.request.module_name = modules.module_name;
+
+  if (set_joint_module_client_.call(set_joint_srv) == false)
+  {
+    ROS_ERROR("Failed to set module");
+    return;
+  }
+
+  return ;
 }
 
 void SoccerDemo::parseJointNameFromYaml(const std::string &path)
@@ -414,15 +430,9 @@ void SoccerDemo::startSoccerMode()
 {
   setModuleToDemo("action_module");
 
-  usleep(100 * 1000);
-
   playMotion(WalkingReady);
 
-  usleep(1500 * 1000);
-
   setBodyModuleToDemo("walking_module");
-
-  usleep(20 * 1000);
 
   ROS_INFO("Start Soccer Demo");
   on_following_ball_ = true;
@@ -445,24 +455,24 @@ void SoccerDemo::handleKick(int ball_position)
 
   usleep(1500 * 1000);
 
-  if (handleFallen(stand_state_) == true)
+  if (handleFallen(stand_state_) == true || enable_ == false)
     return;
 
   // kick motion
   switch (ball_position)
   {
-    case robotis_op::BallFollower::OnRight:
-      std::cout << "Kick Motion [R]: " << ball_position << std::endl;
-      playMotion(is_grass_ ? RightKick + ForGrass : RightKick);
-      break;
+  case robotis_op::BallFollower::OnRight:
+    std::cout << "Kick Motion [R]: " << ball_position << std::endl;
+    playMotion(is_grass_ ? RightKick + ForGrass : RightKick);
+    break;
 
-    case robotis_op::BallFollower::OnLeft:
-      std::cout << "Kick Motion [L]: " << ball_position << std::endl;
-      playMotion(is_grass_ ? LeftKick + ForGrass : LeftKick);
-      break;
+  case robotis_op::BallFollower::OnLeft:
+    std::cout << "Kick Motion [L]: " << ball_position << std::endl;
+    playMotion(is_grass_ ? LeftKick + ForGrass : LeftKick);
+    break;
 
-    default:
-      break;
+  default:
+    break;
   }
 
   on_following_ball_ = false;
@@ -487,23 +497,21 @@ bool SoccerDemo::handleFallen(int fallen_status)
   // change to motion module
   setModuleToDemo("action_module");
 
-  usleep(600 * 1000);
-
   // getup motion
   switch (fallen_status)
   {
-    case Fallen_Forward:
-      std::cout << "Getup Motion [F]: " << std::endl;
-      playMotion(is_grass_ ? GetUpFront + ForGrass : GetUpFront);
-      break;
+  case Fallen_Forward:
+    std::cout << "Getup Motion [F]: " << std::endl;
+    playMotion(is_grass_ ? GetUpFront + ForGrass : GetUpFront);
+    break;
 
-    case Fallen_Behind:
-      std::cout << "Getup Motion [B]: " << std::endl;
-      playMotion(is_grass_ ? GetUpBack + ForGrass : GetUpBack);
-      break;
+  case Fallen_Behind:
+    std::cout << "Getup Motion [B]: " << std::endl;
+    playMotion(is_grass_ ? GetUpBack + ForGrass : GetUpBack);
+    break;
 
-    default:
-      break;
+  default:
+    break;
   }
 
   while(isActionRunning() == true)

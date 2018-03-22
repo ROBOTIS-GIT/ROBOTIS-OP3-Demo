@@ -30,6 +30,8 @@
 #include "robotis_math/robotis_linear_algebra.h"
 #include "op3_action_module_msgs/IsRunning.h"
 #include "robotis_controller_msgs/SyncWriteItem.h"
+#include "robotis_controller_msgs/JointCtrlModule.h"
+#include "robotis_controller_msgs/SetJointModule.h"
 
 namespace robotis_op
 {
@@ -70,6 +72,7 @@ class SoccerDemo : public OPDemo
 
   void setBodyModuleToDemo(const std::string &body_module, bool with_head_control = true);
   void setModuleToDemo(const std::string &module_name);
+  void callServiceSettingModule(const robotis_controller_msgs::JointCtrlModule &modules);
   void parseJointNameFromYaml(const std::string &path);
   bool getJointNameFromID(const int &id, std::string &joint_name);
   bool getIDFromJointName(const std::string &joint_name, int &id);
@@ -101,6 +104,7 @@ class SoccerDemo : public OPDemo
   ros::Subscriber imu_data_sub_;
 
   ros::ServiceClient is_running_client_;
+  ros::ServiceClient set_joint_module_client_;
 
   std::map<int, std::string> id_joint_table_;
   std::map<std::string, int> joint_id_table_;

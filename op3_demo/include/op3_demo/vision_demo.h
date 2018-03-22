@@ -30,6 +30,7 @@
 #include "op3_demo/face_tracker.h"
 
 #include "robotis_controller_msgs/SyncWriteItem.h"
+#include "robotis_controller_msgs/SetModule.h"
 
 namespace robotis_op
 {
@@ -59,6 +60,7 @@ class VisionDemo : public OPDemo
   void demoCommandCallback(const std_msgs::String::ConstPtr &msg);
 
   void setModuleToDemo(const std::string &module_name);
+  void callServiceSettingModule(const std::string &module_name);
 
   FaceTracker face_tracker_;
 
@@ -70,9 +72,9 @@ class VisionDemo : public OPDemo
   ros::Subscriber buttuon_sub_;
   ros::Subscriber faceCoord_sub_;
 
+  ros::ServiceClient set_joint_module_client_;
   geometry_msgs::Point face_position_;
 
-  bool is_tracking_;
   int tracking_status_;
 };
 
