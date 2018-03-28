@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>op3_demo</name>
-  <version>0.1.0</version>
+  <version>0.1.1</version>
   <description>
     op3 default demo
     It includes three demontrations(soccer demo, vision demo, action script demo)
