@@ -68,7 +68,7 @@ generate_dynamic_reconfigure_options(cfg/detector_params.cfg)
 ################################################################################
 catkin_package(
   INCLUDE_DIRS include
-  CATKIN_DEPENDS cv_bridge geometry_msgs image_transport roscpp rospy std_msgs dynamic_reconfigure
+  CATKIN_DEPENDS cv_bridge cmake_modules geometry_msgs image_transport roscpp rospy std_msgs dynamic_reconfigure
 )
 
 ################################################################################
