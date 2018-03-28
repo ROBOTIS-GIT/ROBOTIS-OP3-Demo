@@ -59,7 +59,7 @@ generate_messages(
 ################################################################################
 # Declare ROS dynamic reconfigure parameters
 ################################################################################
-generate_dynamic_reconfigure_options(cfg/detector_params.cfg)
+generate_dynamic_reconfigure_options(cfg/DetectorParams.cfg)
 
 
 ################################################################################
