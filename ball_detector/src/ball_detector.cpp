@@ -234,7 +234,7 @@ void BallDetector::imageCallback(const sensor_msgs::ImageConstPtr & msg)
   return;
 }
 
-void BallDetector::dynParamCallback(ball_detector::detectorParamsConfig &config, uint32_t level)
+void BallDetector::dynParamCallback(ball_detector::DetectorParamsConfig &config, uint32_t level)
 {
   params_config_.gaussian_blur_size = config.gaussian_blur_size;
   params_config_.gaussian_blur_sigma = config.gaussian_blur_sigma;
