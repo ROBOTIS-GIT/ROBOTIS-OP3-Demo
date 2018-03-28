@@ -10,7 +10,7 @@ filter_h_min: 350
 filter_h_max: 15
 filter_s_min: 200
 filter_s_max: 255
-filter_v_min: 80
+filter_v_min: 60
 filter_v_max: 255
 use_second_filter: false
 filter2_h_min: 30
@@ -19,5 +19,5 @@ filter2_s_min: 0
 filter2_s_max: 40
 filter2_v_min: 200
 filter2_v_max: 255
-ellipse_size: 1
+ellipse_size: 2
 filter_debug: false
