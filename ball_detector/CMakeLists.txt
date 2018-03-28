@@ -83,8 +83,7 @@ add_executable(ball_detector_node
   src/ball_detector.cpp
   src/ball_detector_node.cpp)
 
-add_dependencies(ball_detector_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
+add_dependencies(ball_detector_node ${PROJECT_NAME}_gencfg ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(ball_detector_node
   ${catkin_LIBRARIES}
   ${YAML_CPP_LIBRARIES}
