@@ -20,8 +20,6 @@
 #define FACE_TRACKING_H_
 
 #include <math.h>
-#include <yaml-cpp/yaml.h>
-
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <std_msgs/Bool.h>
@@ -29,6 +27,7 @@
 #include <std_msgs/Int32.h>
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Point.h>
+#include <yaml-cpp/yaml.h>
 
 namespace robotis_op
 {

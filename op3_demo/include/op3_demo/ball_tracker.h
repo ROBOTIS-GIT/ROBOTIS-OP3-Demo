@@ -20,17 +20,16 @@
 #define BALL_TRACKING_H_
 
 #include <math.h>
-#include <yaml-cpp/yaml.h>
-
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Int32.h>
-//#include <std_msgs/Float64MultiArray.h>
 #include <sensor_msgs/JointState.h>
+#include <geometry_msgs/Point.h>
+#include <yaml-cpp/yaml.h>
 
 #include "robotis_controller_msgs/JointCtrlModule.h"
-#include "ball_detector/circleSetStamped.h"
+#include "ball_detector/CircleSetStamped.h"
 #include "op3_walking_module_msgs/WalkingParam.h"
 #include "op3_walking_module_msgs/GetWalkingParam.h"
 
@@ -80,7 +79,7 @@ protected:
   const int WAITING_THRESHOLD;
   const bool DEBUG_PRINT;
 
-  void ballPositionCallback(const ball_detector::circleSetStamped::ConstPtr &msg);
+  void ballPositionCallback(const ball_detector::CircleSetStamped::ConstPtr &msg);
   void ballTrackerCommandCallback(const std_msgs::String::ConstPtr &msg);
   void publishHeadJoint(double pan, double tilt);
   void scanBall();

@@ -16,7 +16,6 @@
 
 /* Author: Kayman Jung */
 
-#include <yaml-cpp/yaml.h>
 #include <fstream>
 
 #include "ball_detector/ball_detector.h"
@@ -72,7 +71,7 @@ BallDetector::BallDetector()
 
   //sets publishers
   image_pub_ = it_.advertise("image_out", 100);
-  circles_pub_ = nh_.advertise<ball_detector::circleSetStamped>("circle_set", 100);
+  circles_pub_ = nh_.advertise<ball_detector::CircleSetStamped>("circle_set", 100);
   camera_info_pub_ = nh_.advertise<sensor_msgs::CameraInfo>("camera_info", 100);
 
   //sets subscribers
@@ -92,7 +91,7 @@ BallDetector::BallDetector()
   param_command_sub_ = nh_.subscribe("param_command", 1, &BallDetector::paramCommandCallback, this);
   set_param_client_ = nh_.advertiseService("set_param", &BallDetector::setParamCallback, this);
   get_param_client_ = nh_.advertiseService("get_param", &BallDetector::getParamCallback, this);
-  default_setting_path_ = ros::package::getPath(ROS_PACKAGE_NAME) + "/launch/ball_detector_params_default.yaml";
+  default_setting_path_ = ros::package::getPath(ROS_PACKAGE_NAME) + "/config/ball_detector_params_default.yaml";
 
   //sets config and prints it
   params_config_ = detect_config;
@@ -234,7 +233,7 @@ void BallDetector::imageCallback(const sensor_msgs::ImageConstPtr & msg)
   return;
 }
 
-void BallDetector::dynParamCallback(ball_detector::detectorParamsConfig &config, uint32_t level)
+void BallDetector::dynParamCallback(ball_detector::DetectorParamsConfig &config, uint32_t level)
 {
   params_config_.gaussian_blur_size = config.gaussian_blur_size;
   params_config_.gaussian_blur_sigma = config.gaussian_blur_sigma;
