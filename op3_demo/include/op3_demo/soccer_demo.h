@@ -23,15 +23,18 @@
 #include <std_msgs/String.h>
 #include <sensor_msgs/Imu.h>
 #include <boost/thread.hpp>
+#include <eigen3/Eigen/Eigen>
+#include <yaml-cpp/yaml.h>
+
+#include "op3_action_module_msgs/IsRunning.h"
+#include "robotis_controller_msgs/SyncWriteItem.h"
+#include "robotis_controller_msgs/JointCtrlModule.h"
+#include "robotis_controller_msgs/SetJointModule.h"
 
 #include "op3_demo/op_demo.h"
 #include "op3_demo/ball_tracker.h"
 #include "op3_demo/ball_follower.h"
 #include "robotis_math/robotis_linear_algebra.h"
-#include "op3_action_module_msgs/IsRunning.h"
-#include "robotis_controller_msgs/SyncWriteItem.h"
-#include "robotis_controller_msgs/JointCtrlModule.h"
-#include "robotis_controller_msgs/SetJointModule.h"
 
 namespace robotis_op
 {

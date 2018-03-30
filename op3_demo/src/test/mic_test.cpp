@@ -36,8 +36,8 @@ MicTest::MicTest()
   boost::thread queue_thread = boost::thread(boost::bind(&MicTest::callbackThread, this));
   boost::thread process_thread = boost::thread(boost::bind(&MicTest::processThread, this));
 
-  recording_file_name_ = ros::package::getPath("op3_demo") + "/Data/mp3/test/mic-test.wav";
-  default_mp3_path_ = ros::package::getPath("op3_demo") + "/Data/mp3/test/";
+  recording_file_name_ = ros::package::getPath("op3_demo") + "/data/mp3/test/mic-test.wav";
+  default_mp3_path_ = ros::package::getPath("op3_demo") + "/data/mp3/test/";
 
   start_time_ = ros::Time::now();
 }

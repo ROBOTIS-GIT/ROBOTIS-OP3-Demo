@@ -19,13 +19,13 @@
 #ifndef ACTION_DEMO_H_
 #define ACTION_DEMO_H_
 
-#include <boost/thread.hpp>
-#include <yaml-cpp/yaml.h>
-
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
+
+#include <boost/thread.hpp>
+#include <yaml-cpp/yaml.h>
 
 #include "op3_demo/op_demo.h"
 #include "robotis_controller_msgs/JointCtrlModule.h"

@@ -21,23 +21,26 @@
 
 #include <string>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-
-//ros dependencies
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/String.h>
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/image_encodings.h>
 #include <dynamic_reconfigure/server.h>
+#include <cv_bridge/cv_bridge.h>
+#include <image_transport/image_transport.h>
 
-#include "ball_detector/circleSetStamped.h"
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <boost/thread.hpp>
+#include <yaml-cpp/yaml.h>
+
+#include "ball_detector/DetectorParamsConfig.h"
+
 #include "ball_detector/ball_detector_config.h"
-#include "ball_detector/detectorParamsConfig.h"
+
+#include "ball_detector/CircleSetStamped.h"
 #include "ball_detector/GetParameters.h"
 #include "ball_detector/SetParameters.h"
 
@@ -71,7 +74,7 @@ class BallDetector
   //callbacks to camera info subscription
   void cameraInfoCallback(const sensor_msgs::CameraInfo & msg);
 
-  void dynParamCallback(ball_detector::detectorParamsConfig &config, uint32_t level);
+  void dynParamCallback(ball_detector::DetectorParamsConfig &config, uint32_t level);
   void enableCallback(const std_msgs::Bool::ConstPtr &msg);
 
   void paramCommandCallback(const std_msgs::String::ConstPtr &msg);
@@ -112,7 +115,7 @@ class BallDetector
   int not_found_count_;
 
   //circle set publisher
-  ball_detector::circleSetStamped circles_msg_;
+  ball_detector::CircleSetStamped circles_msg_;
   ros::Publisher circles_pub_;
 
   //camera info subscriber
@@ -154,8 +157,8 @@ class BallDetector
   cv::Mat in_image_;
   cv::Mat out_image_;
 
-  dynamic_reconfigure::Server<ball_detector::detectorParamsConfig> param_server_;
-  dynamic_reconfigure::Server<ball_detector::detectorParamsConfig>::CallbackType callback_fnc_;
+  dynamic_reconfigure::Server<ball_detector::DetectorParamsConfig> param_server_;
+  dynamic_reconfigure::Server<ball_detector::DetectorParamsConfig>::CallbackType callback_fnc_;
 };
 
 }       // namespace robotis_op

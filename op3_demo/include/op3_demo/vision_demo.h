@@ -19,18 +19,17 @@
 #ifndef VISION_DEMO_H_
 #define VISION_DEMO_H_
 
-#include <boost/thread.hpp>
-
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Int32MultiArray.h>
 #include <geometry_msgs/Point.h>
-
-#include "op3_demo/op_demo.h"
-#include "op3_demo/face_tracker.h"
+#include <boost/thread.hpp>
 
 #include "robotis_controller_msgs/SyncWriteItem.h"
 #include "robotis_controller_msgs/SetModule.h"
+
+#include "op3_demo/op_demo.h"
+#include "op3_demo/face_tracker.h"
 
 namespace robotis_op
 {
