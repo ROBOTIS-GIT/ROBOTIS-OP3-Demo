@@ -19,14 +19,12 @@
 #ifndef BUTTON_TEST_H_
 #define BUTTON_TEST_H_
 
-#include <boost/thread.hpp>
-
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <std_msgs/String.h>
+#include <boost/thread.hpp>
 
 #include "op3_demo/op_demo.h"
-
 #include "robotis_controller_msgs/SyncWriteItem.h"
 
 namespace robotis_op

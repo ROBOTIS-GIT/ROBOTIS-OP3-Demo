@@ -33,7 +33,7 @@ ButtonTest::ButtonTest()
   boost::thread queue_thread = boost::thread(boost::bind(&ButtonTest::callbackThread, this));
   boost::thread process_thread = boost::thread(boost::bind(&ButtonTest::processThread, this));
 
-  default_mp3_path_ = ros::package::getPath("op3_demo") + "/Data/mp3/test/";
+  default_mp3_path_ = ros::package::getPath("op3_demo") + "/data/mp3/test/";
 }
 
 ButtonTest::~ButtonTest()

@@ -84,7 +84,7 @@ int main(int argc, char **argv)
   ros::Subscriber buttuon_sub = nh.subscribe("/robotis/open_cr/button", 1, buttonHandlerCallback);
   ros::Subscriber mode_command_sub = nh.subscribe("/robotis/mode_command", 1, demoModeCommandCallback);
 
-  default_mp3_path = ros::package::getPath("op3_demo") + "/Data/mp3/";
+  default_mp3_path = ros::package::getPath("op3_demo") + "/data/mp3/";
 
   ros::start();
 

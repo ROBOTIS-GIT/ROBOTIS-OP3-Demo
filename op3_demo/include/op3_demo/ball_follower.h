@@ -20,16 +20,16 @@
 #define BALL_FOLLOWER_H_
 
 #include <math.h>
-#include <yaml-cpp/yaml.h>
-
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Int32.h>
 #include <sensor_msgs/JointState.h>
+#include <geometry_msgs/Point.h>
+#include <yaml-cpp/yaml.h>
 
 #include "robotis_controller_msgs/JointCtrlModule.h"
-#include "ball_detector/circleSetStamped.h"
+#include "ball_detector/CircleSetStamped.h"
 #include "op3_walking_module_msgs/WalkingParam.h"
 #include "op3_walking_module_msgs/GetWalkingParam.h"
 

@@ -1,30 +1,29 @@
 <?xml version="1.0"?>
 <!-- Launches an UVC camera, the ball detector and its visualization  -->
 <launch>    
+  <!-- robotis op3 manager -->
+  <include file="$(find op3_manager)/launch/op3_manager.launch"/> 
 
-    <!-- robotis op3 manager -->
-    <include file="$(find op3_manager)/launch/op3_manager.launch"/> 
-
-    <!-- Camera and Ball detector -->
-    <include file="$(find ball_detector)/launch/ball_detector_from_usb_cam.launch"/> 
+  <!-- Camera and Ball detector -->
+  <include file="$(find ball_detector)/launch/ball_detector_from_usb_cam.launch"/> 
    
-    <!-- face tracking -->
-    <include file="$(find op3_demo)/launch/face_detection_op3.launch" />
+  <!-- face tracking -->
+  <include file="$(find op3_demo)/launch/face_detection_op3.launch" />
 
-    <!-- camera setting tool -->
-    <include file="$(find op3_camera_setting_tool)/launch/op3_camera_setting_tool.launch" />
+  <!-- camera setting tool -->
+  <include file="$(find op3_camera_setting_tool)/launch/op3_camera_setting_tool.launch" />
     
-    <!-- sound player -->
-    <node pkg="ros_madplay_player" type="ros_madplay_player" name="ros_madplay_player" output="screen"/>
+  <!-- sound player -->
+  <node pkg="ros_madplay_player" type="ros_madplay_player" name="ros_madplay_player" output="screen"/>
     
-    <!-- web setting -->
-    <include file="$(find op3_web_setting_tool)/launch/web_setting_server.launch" />
+  <!-- web setting -->
+  <include file="$(find op3_web_setting_tool)/launch/web_setting_server.launch" />
     
-    <!-- robotis op3 self test demo -->
-    <node pkg="op3_demo" type="self_test_node" name="op3_self_test" output="screen">
-      <param name="grass_demo" type="bool" value="False" />
-      <param name="p_gain" value="0.45" />
-      <param name="d_gain" value="0.045" />
-    </node>
+  <!-- robotis op3 self test demo -->
+  <node pkg="op3_demo" type="self_test_node" name="op3_self_test" output="screen">
+    <param name="grass_demo" type="bool" value="False" />
+    <param name="p_gain" value="0.45" />
+    <param name="d_gain" value="0.045" />
+  </node>
 </launch>
 
