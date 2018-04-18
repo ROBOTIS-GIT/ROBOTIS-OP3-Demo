@@ -59,7 +59,7 @@ BallTracker::~BallTracker()
 
 }
 
-void BallTracker::ballPositionCallback(const ball_detector::CircleSetStamped::ConstPtr &msg)
+void BallTracker::ballPositionCallback(const op3_ball_detector::CircleSetStamped::ConstPtr &msg)
 {
   for (int idx = 0; idx < msg->circles.size(); idx++)
   {

@@ -4,7 +4,7 @@
     <include file="$(find op3_manager)/launch/op3_manager.launch"/>
 
     <!-- Camera and Ball detector -->
-    <include file="$(find ball_detector)/launch/ball_detector_from_usb_cam.launch"/> 
+    <include file="$(find op3_ball_detector)/launch/ball_detector_from_usb_cam.launch"/> 
    
     <!-- face tracking -->
     <include file="$(find op3_demo)/launch/face_detection_op3.launch" />

@@ -36,13 +36,12 @@
 #include <boost/thread.hpp>
 #include <yaml-cpp/yaml.h>
 
-#include "ball_detector/DetectorParamsConfig.h"
+#include "op3_ball_detector/ball_detector_config.h"
 
-#include "ball_detector/ball_detector_config.h"
-
-#include "ball_detector/CircleSetStamped.h"
-#include "ball_detector/GetParameters.h"
-#include "ball_detector/SetParameters.h"
+#include "op3_ball_detector/DetectorParamsConfig.h"
+#include "op3_ball_detector/CircleSetStamped.h"
+#include "op3_ball_detector/GetParameters.h"
+#include "op3_ball_detector/SetParameters.h"
 
 namespace robotis_op
 {
@@ -74,12 +73,12 @@ class BallDetector
   //callbacks to camera info subscription
   void cameraInfoCallback(const sensor_msgs::CameraInfo & msg);
 
-  void dynParamCallback(ball_detector::DetectorParamsConfig &config, uint32_t level);
+  void dynParamCallback(op3_ball_detector::DetectorParamsConfig &config, uint32_t level);
   void enableCallback(const std_msgs::Bool::ConstPtr &msg);
 
   void paramCommandCallback(const std_msgs::String::ConstPtr &msg);
-  bool setParamCallback(ball_detector::SetParameters::Request &req, ball_detector::SetParameters::Response &res);
-  bool getParamCallback(ball_detector::GetParameters::Request &req, ball_detector::GetParameters::Response &res);
+  bool setParamCallback(op3_ball_detector::SetParameters::Request &req, op3_ball_detector::SetParameters::Response &res);
+  bool getParamCallback(op3_ball_detector::GetParameters::Request &req, op3_ball_detector::GetParameters::Response &res);
   void resetParameter();
   void publishParam();
 
@@ -115,7 +114,7 @@ class BallDetector
   int not_found_count_;
 
   //circle set publisher
-  ball_detector::CircleSetStamped circles_msg_;
+  op3_ball_detector::CircleSetStamped circles_msg_;
   ros::Publisher circles_pub_;
 
   //camera info subscriber
@@ -157,8 +156,8 @@ class BallDetector
   cv::Mat in_image_;
   cv::Mat out_image_;
 
-  dynamic_reconfigure::Server<ball_detector::DetectorParamsConfig> param_server_;
-  dynamic_reconfigure::Server<ball_detector::DetectorParamsConfig>::CallbackType callback_fnc_;
+  dynamic_reconfigure::Server<op3_ball_detector::DetectorParamsConfig> param_server_;
+  dynamic_reconfigure::Server<op3_ball_detector::DetectorParamsConfig>::CallbackType callback_fnc_;
 };
 
 }       // namespace robotis_op

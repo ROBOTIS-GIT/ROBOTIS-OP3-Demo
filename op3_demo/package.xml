@@ -24,7 +24,7 @@
   <depend>op3_action_module_msgs</depend>
   <depend>cmake_modules</depend>
   <depend>robotis_math</depend>
-  <depend>ball_detector</depend>
+  <depend>op3_ball_detector</depend>
   <depend>boost</depend>
   <depend>eigen</depend>
   <depend>yaml-cpp</depend>
