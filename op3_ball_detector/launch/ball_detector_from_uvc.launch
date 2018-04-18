@@ -25,6 +25,6 @@
     <!-- <param name="white_balance_temperature" value="2800" /> -->       
     
   <!-- ball detector -->
-  <include file="$(find ball_detector)/launch/ball_detector.launch" />
+  <include file="$(find op3_ball_detector)/launch/ball_detector.launch" />
 </launch>
 
