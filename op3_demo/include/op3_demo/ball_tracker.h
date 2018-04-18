@@ -29,7 +29,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "robotis_controller_msgs/JointCtrlModule.h"
-#include "ball_detector/CircleSetStamped.h"
+#include "op3_ball_detector/CircleSetStamped.h"
 #include "op3_walking_module_msgs/WalkingParam.h"
 #include "op3_walking_module_msgs/GetWalkingParam.h"
 
@@ -79,7 +79,7 @@ protected:
   const int WAITING_THRESHOLD;
   const bool DEBUG_PRINT;
 
-  void ballPositionCallback(const ball_detector::CircleSetStamped::ConstPtr &msg);
+  void ballPositionCallback(const op3_ball_detector::CircleSetStamped::ConstPtr &msg);
   void ballTrackerCommandCallback(const std_msgs::String::ConstPtr &msg);
   void publishHeadJoint(double pan, double tilt);
   void scanBall();

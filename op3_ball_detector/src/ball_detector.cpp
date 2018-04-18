@@ -18,7 +18,7 @@
 
 #include <fstream>
 
-#include "ball_detector/ball_detector.h"
+#include "op3_ball_detector/ball_detector.h"
 
 namespace robotis_op
 {
@@ -71,7 +71,7 @@ BallDetector::BallDetector()
 
   //sets publishers
   image_pub_ = it_.advertise("image_out", 100);
-  circles_pub_ = nh_.advertise<ball_detector::CircleSetStamped>("circle_set", 100);
+  circles_pub_ = nh_.advertise<op3_ball_detector::CircleSetStamped>("circle_set", 100);
   camera_info_pub_ = nh_.advertise<sensor_msgs::CameraInfo>("camera_info", 100);
 
   //sets subscribers
@@ -87,7 +87,7 @@ BallDetector::BallDetector()
   param_server_.setCallback(callback_fnc_);
 
   // web setting
-  param_pub_ = nh_.advertise<ball_detector::BallDetectorParams>("current_params", 1);
+  param_pub_ = nh_.advertise<op3_ball_detector::BallDetectorParams>("current_params", 1);
   param_command_sub_ = nh_.subscribe("param_command", 1, &BallDetector::paramCommandCallback, this);
   set_param_client_ = nh_.advertiseService("set_param", &BallDetector::setParamCallback, this);
   get_param_client_ = nh_.advertiseService("get_param", &BallDetector::getParamCallback, this);
@@ -233,7 +233,7 @@ void BallDetector::imageCallback(const sensor_msgs::ImageConstPtr & msg)
   return;
 }
 
-void BallDetector::dynParamCallback(ball_detector::DetectorParamsConfig &config, uint32_t level)
+void BallDetector::dynParamCallback(op3_ball_detector::DetectorParamsConfig &config, uint32_t level)
 {
   params_config_.gaussian_blur_size = config.gaussian_blur_size;
   params_config_.gaussian_blur_sigma = config.gaussian_blur_sigma;
@@ -296,7 +296,7 @@ void BallDetector::paramCommandCallback(const std_msgs::String::ConstPtr &msg)
   }
 }
 
-bool BallDetector::setParamCallback(ball_detector::SetParameters::Request &req, ball_detector::SetParameters::Response &res)
+bool BallDetector::setParamCallback(op3_ball_detector::SetParameters::Request &req, op3_ball_detector::SetParameters::Response &res)
 {
   params_config_.gaussian_blur_size = req.params.gaussian_blur_size;
   params_config_.gaussian_blur_sigma = req.params.gaussian_blur_sigma;
@@ -321,7 +321,7 @@ bool BallDetector::setParamCallback(ball_detector::SetParameters::Request &req, 
   return true;
 }
 
-bool BallDetector:: getParamCallback(ball_detector::GetParameters::Request &req, ball_detector::GetParameters::Response &res)
+bool BallDetector:: getParamCallback(op3_ball_detector::GetParameters::Request &req, op3_ball_detector::GetParameters::Response &res)
 {
   res.returns.gaussian_blur_size = params_config_.gaussian_blur_size;
   res.returns.gaussian_blur_sigma = params_config_.gaussian_blur_sigma;
@@ -396,7 +396,7 @@ void BallDetector::resetParameter()
 
 void BallDetector::publishParam()
 {
-  ball_detector::BallDetectorParams params;
+  op3_ball_detector::BallDetectorParams params;
 
   params.gaussian_blur_size = params_config_.gaussian_blur_size;
   params.gaussian_blur_sigma = params_config_.gaussian_blur_sigma;
