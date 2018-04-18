@@ -16,7 +16,7 @@
 
 /* Author: Kayman Jung */
 
-#include "ball_detector/ball_detector.h"
+#include "op3_ball_detector/ball_detector.h"
 
 //node main
 int main(int argc, char **argv)

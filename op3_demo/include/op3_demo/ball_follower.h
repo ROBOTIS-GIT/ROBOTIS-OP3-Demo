@@ -29,7 +29,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "robotis_controller_msgs/JointCtrlModule.h"
-#include "ball_detector/CircleSetStamped.h"
+#include "op3_ball_detector/CircleSetStamped.h"
 #include "op3_walking_module_msgs/WalkingParam.h"
 #include "op3_walking_module_msgs/GetWalkingParam.h"
 
