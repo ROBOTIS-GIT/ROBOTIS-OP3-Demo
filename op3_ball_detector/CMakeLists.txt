@@ -73,7 +73,6 @@ generate_dynamic_reconfigure_options(
   cfg/DetectorParams.cfg
 )
 
-
 ################################################################################
 # Declare catkin specific configuration to be passed to dependent projects
 ##################################################################################

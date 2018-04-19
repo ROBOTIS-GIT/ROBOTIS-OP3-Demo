@@ -12,8 +12,9 @@
   <url type="emanual">http://emanual.robotis.com/docs/en/platform/op3/introduction/</url>
   <url type="repository">https://github.com/ROBOTIS-GIT/ROBOTIS-OP3-Demo</url>
   <url type="bugtracker">https://github.com/ROBOTIS-GIT/ROBOTIS-OP3-Demo/issues</url>
-  <buildtool_depend>catkin</buildtool_depend>    
+  <buildtool_depend>catkin</buildtool_depend>
   <exec_depend>op3_ball_detector</exec_depend>
+  <exec_depend>op3_bringup</exec_depend>
   <exec_depend>op3_demo</exec_depend>
   <export><metapackage/></export>
 </package>

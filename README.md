@@ -11,7 +11,8 @@
 
 ## Wiki for robotis_op3_demo Packages
 - http://wiki.ros.org/robotis_op3_demo (metapackage)
-- http://wiki.ros.org/ball_detector
+- http://wiki.ros.org/op3_ball_detector
+- http://wiki.ros.org/op3_bringup
 - http://wiki.ros.org/op3_demo
 
 ## Open Source related to ROBOTIS OP3
@@ -30,5 +31,6 @@
 
 ## Documents and Videos related to ROBOTIS OP3
 - [ROBOTIS e-Manual for ROBOTIS OP3](http://emanual.robotis.com/docs/en/platform/op3/introduction/)
+- [ROBOTIS e-Manual for ROBOTIS THORMANG3](http://emanual.robotis.com/docs/en/platform/thormang3/introduction/)
 - [ROBOTIS e-Manual for ROBOTIS Framework](http://emanual.robotis.com/docs/en/software/robotis_framework_packages/)
 - [ROBOTIS e-Manual for Dynamixel SDK](http://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_sdk/overview/)
