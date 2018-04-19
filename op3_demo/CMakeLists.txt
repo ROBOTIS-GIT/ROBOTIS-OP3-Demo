@@ -18,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   op3_action_module_msgs
   cmake_modules
   robotis_math
-  ball_detector
+  op3_ball_detector
 )
 
 find_package(Boost REQUIRED COMPONENTS thread)
@@ -71,7 +71,7 @@ catkin_package(
     op3_action_module_msgs
     cmake_modules
     robotis_math
-    ball_detector
+    op3_ball_detector
   DEPENDS Boost EIGEN3
 )
 

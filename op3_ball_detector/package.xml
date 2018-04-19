@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>ball_detector</name>
+  <name>op3_ball_detector</name>
   <version>0.1.0</version>
   <description>
     This package implements a circle-like shape detector of the input image.
