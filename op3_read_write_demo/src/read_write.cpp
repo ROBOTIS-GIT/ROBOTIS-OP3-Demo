@@ -101,7 +101,7 @@ int main(int argc, char **argv)
   // torque off : right arm
   torqueOff("right");
 
-  demo_ready = true;
+//  demo_ready = true;
 
   //node loop
   while (ros::ok())
@@ -124,8 +124,10 @@ void buttonHandlerCallback(const std_msgs::String::ConstPtr& msg)
 {
   //    if (msg->data == "mode_long")
   //    else if (msg->data == "user_long")
-  //    if (msg->data == "start")
-  //    else if (msg->data == "mode")
+      if (msg->data == "start")
+        demo_ready = false;
+      else if (msg->data == "mode")
+        demo_ready = true;
 }
 
 void jointstatesCallback(const sensor_msgs::JointState::ConstPtr& msg)
