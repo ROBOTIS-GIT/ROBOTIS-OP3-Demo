@@ -25,6 +25,7 @@
 
 void buttonHandlerCallback(const std_msgs::String::ConstPtr& msg);
 void jointstatesCallback(const sensor_msgs::JointState::ConstPtr& msg);
+void readyToDemo();
 void setModule(const std::string& module_name);
 void goInitPose();
 void setLED(int led);
@@ -32,20 +33,27 @@ bool checkManagerRunning(std::string& manager_name);
 void torqueOnAll();
 void torqueOff(const std::string& body_side);
 
+enum ControlModule
+{
+  None = 0,
+  Framework = 1,
+  DirectControlModule = 2,
+};
+
 const int SPIN_RATE = 30;
 const bool DEBUG_PRINT = false;
 
 ros::Publisher init_pose_pub;
-//ros::Publisher play_sound_pub;
 ros::Publisher sync_write_pub;
 ros::Publisher dxl_torque_pub;
 ros::Publisher write_joint_pub;
+ros::Publisher write_joint_pub2;
 ros::Subscriber buttuon_sub;
 ros::Subscriber read_joint_sub;
 
 ros::ServiceClient set_joint_module_client;
 
-//std::string default_mp3_path = "";
+int control_module = None;
 bool demo_ready = false;
 
 //node main
@@ -57,15 +65,13 @@ int main(int argc, char **argv)
   ros::NodeHandle nh(ros::this_node::getName());
 
   init_pose_pub = nh.advertise<std_msgs::String>("/robotis/base/ini_pose", 0);
-  //  play_sound_pub = nh.advertise<std_msgs::String>("/play_sound_file", 0);
   sync_write_pub = nh.advertise<robotis_controller_msgs::SyncWriteItem>("/robotis/sync_write_item", 0);
   dxl_torque_pub = nh.advertise<std_msgs::String>("/robotis/dxl_torque", 0);
-  write_joint_pub = nh.advertise<sensor_msgs::JointState>("/robotis/direct_control/set_joint_states", 0);
+  write_joint_pub = nh.advertise<sensor_msgs::JointState>("/robotis/set_joint_states", 0);
+  write_joint_pub2 = nh.advertise<sensor_msgs::JointState>("/robotis/direct_control/set_joint_states", 0);
 
-  read_joint_sub = nh.subscribe("/robotis/present_joint_ctrl_modules", 1, jointstatesCallback);
+  read_joint_sub = nh.subscribe("/robotis/present_joint_states", 1, jointstatesCallback);
   buttuon_sub = nh.subscribe("/robotis/open_cr/button", 1, buttonHandlerCallback);
-
-  //  default_mp3_path = ros::package::getPath("op3_demo") + "/data/mp3/";
 
   // service
   set_joint_module_client = nh.serviceClient<robotis_controller_msgs::SetModule>("/robotis/set_present_ctrl_modules");
@@ -75,7 +81,7 @@ int main(int argc, char **argv)
   //set node loop rate
   ros::Rate loop_rate(SPIN_RATE);
 
-  // wait for starting of manager
+  // wait for starting of op3_manager
   std::string manager_name = "/op3_manager";
   while (ros::ok())
   {
@@ -89,25 +95,12 @@ int main(int argc, char **argv)
     ROS_WARN("Waiting for op3 manager");
   }
 
-  // init procedure
-  goInitPose();
-
-  // turn on R/G/B LED [0x01 | 0x02 | 0x04]
-  setLED(0x01);
-
-  // change the module to direct_control for demo
-  setModule("direct_control");
-
-  // torque off : right arm
-  torqueOff("right");
-
-//  demo_ready = true;
+  readyToDemo();
 
   //node loop
   while (ros::ok())
   {
     // process
-
 
     //execute pending callbacks
     ros::spinOnce();
@@ -122,20 +115,36 @@ int main(int argc, char **argv)
 
 void buttonHandlerCallback(const std_msgs::String::ConstPtr& msg)
 {
-  //    if (msg->data == "mode_long")
-  //    else if (msg->data == "user_long")
-      if (msg->data == "start")
-        demo_ready = false;
-      else if (msg->data == "mode")
-        demo_ready = true;
+  // starting demo using robotis_controller
+  if (msg->data == "start")
+  {
+    control_module = Framework;
+    ROS_INFO("Button : start | Framework");
+    readyToDemo();
+  }
+  // starting demo using direct_control_module
+  else if (msg->data == "mode")
+  {
+    control_module = DirectControlModule;
+    ROS_INFO("Button : mode | Direct control module");
+    readyToDemo();
+  }
+  // torque on all joints of ROBOTIS-OP3
+  else if (msg->data == "user")
+  {
+    torqueOnAll();
+    control_module = None;
+  }
 }
 
 void jointstatesCallback(const sensor_msgs::JointState::ConstPtr& msg)
 {
-  if(demo_ready == false)
+  if(control_module == None)
     return;
 
   sensor_msgs::JointState write_msg;
+  write_msg.header = msg->header;
+
   for(int ix = 0; ix < msg->name.size(); ix++)
   {
     std::string joint_name = msg->name[ix];
@@ -144,21 +153,68 @@ void jointstatesCallback(const sensor_msgs::JointState::ConstPtr& msg)
     if(joint_name == "r_sho_pitch")
     {
       write_msg.name.push_back("r_sho_pitch");
+      write_msg.position.push_back(joint_position);
+      write_msg.name.push_back("l_sho_pitch");
       write_msg.position.push_back(-joint_position);
     }
     if(joint_name == "r_sho_roll")
     {
+      write_msg.name.push_back("r_sho_roll");
+      write_msg.position.push_back(joint_position);
       write_msg.name.push_back("l_sho_roll");
       write_msg.position.push_back(-joint_position);
     }
     if(joint_name == "r_el")
     {
+      write_msg.name.push_back("r_el");
+      write_msg.position.push_back(joint_position);
       write_msg.name.push_back("l_el");
       write_msg.position.push_back(-joint_position);
     }
   }
 
-  write_joint_pub.publish(write_msg);
+  if(control_module == Framework)
+    write_joint_pub.publish(write_msg);
+  else if(control_module == DirectControlModule)
+    write_joint_pub2.publish(write_msg);
+}
+
+void readyToDemo()
+{
+  ROS_INFO("Start Read-Write Demo");
+  // turn off LED
+  setLED(0x04);
+
+  torqueOnAll();
+  ROS_INFO("Torque on All joints");
+
+  // send message for going init posture
+  goInitPose();
+  ROS_INFO("Go Init pose");
+
+  // wait while ROBOTIS-OP3 goes to the init posture.
+  ros::Duration(4.0).sleep();
+
+  // turn on R/G/B LED [0x01 | 0x02 | 0x04]
+  setLED(control_module);
+
+  // change the module for demo
+  if(control_module == Framework)
+  {
+    setModule("none");
+    ROS_INFO("Change module to none");
+  }
+  else if(control_module == DirectControlModule)
+  {
+    setModule("direct_control_module");
+    ROS_INFO("Change module to direct_control_module");
+  }
+  else
+    return;
+
+  // torque off : right arm
+  torqueOff("right");
+  ROS_INFO("Torque off");
 }
 
 void goInitPose()
