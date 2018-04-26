@@ -30,7 +30,7 @@ find_package(catkin REQUIRED COMPONENTS
 # Declare catkin specific configuration to be passed to dependent projects
 ################################################################################
 catkin_package(
-  INCLUDE_DIRS include
+  INCLUDE_DIRS
   CATKIN_DEPENDS
     roscpp
     robotis_controller_msgs
@@ -43,7 +43,6 @@ catkin_package(
 # Build
 ################################################################################
 include_directories(
-  include
   ${catkin_INCLUDE_DIRS}
 )
 
