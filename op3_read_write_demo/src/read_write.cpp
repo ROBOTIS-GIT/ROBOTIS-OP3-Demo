@@ -150,6 +150,7 @@ void jointstatesCallback(const sensor_msgs::JointState::ConstPtr& msg)
     std::string joint_name = msg->name[ix];
     double joint_position = msg->position[ix];
 
+    // mirror and copy joint angles from right to left
     if(joint_name == "r_sho_pitch")
     {
       write_msg.name.push_back("r_sho_pitch");
@@ -173,6 +174,7 @@ void jointstatesCallback(const sensor_msgs::JointState::ConstPtr& msg)
     }
   }
 
+  // publish a message to set the joint angles
   if(control_module == Framework)
     write_joint_pub.publish(write_msg);
   else if(control_module == DirectControlModule)
