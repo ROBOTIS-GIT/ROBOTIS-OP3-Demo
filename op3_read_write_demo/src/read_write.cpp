@@ -36,8 +36,8 @@ void torqueOff(const std::string& body_side);
 enum ControlModule
 {
   None = 0,
-  Framework = 1,
-  DirectControlModule = 2,
+  DirectControlModule = 1,
+  Framework = 2,
 };
 
 const int SPIN_RATE = 30;
@@ -116,17 +116,17 @@ int main(int argc, char **argv)
 void buttonHandlerCallback(const std_msgs::String::ConstPtr& msg)
 {
   // starting demo using robotis_controller
-  if (msg->data == "start")
+  if (msg->data == "mode")
   {
     control_module = Framework;
-    ROS_INFO("Button : start | Framework");
+    ROS_INFO("Button : mode | Framework");
     readyToDemo();
   }
   // starting demo using direct_control_module
-  else if (msg->data == "mode")
+  else if (msg->data == "start")
   {
     control_module = DirectControlModule;
-    ROS_INFO("Button : mode | Direct control module");
+    ROS_INFO("Button : start | Direct control module");
     readyToDemo();
   }
   // torque on all joints of ROBOTIS-OP3
