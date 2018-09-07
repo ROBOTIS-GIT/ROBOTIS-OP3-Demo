@@ -45,7 +45,8 @@ BallTracker::BallTracker()
 
   ROS_INFO_STREAM("Ball tracking Gain : " << p_gain_ << ", " << i_gain_ << ", " << d_gain_);
 
-  head_joint_pub_ = nh_.advertise<sensor_msgs::JointState>("/robotis/head_control/set_joint_states_offset", 0);
+  head_joint_offset_pub_ = nh_.advertise<sensor_msgs::JointState>("/robotis/head_control/set_joint_states_offset", 0);
+  head_joint_pub_ = nh_.advertise<sensor_msgs::JointState>("/robotis/head_control/set_joint_states", 0);
   head_scan_pub_ = nh_.advertise<std_msgs::String>("/robotis/head_control/scan_command", 0);
   //  error_pub_ = nh_.advertise<std_msgs::Float64MultiArray>("/ball_tracker/errors", 0);
 
@@ -97,6 +98,8 @@ void BallTracker::startTracking()
 
 void BallTracker::stopTracking()
 {
+  goInit();
+
   on_tracking_ = false;
   ROS_INFO_COND(DEBUG_PRINT, "Stop Ball tracking");
 
@@ -245,6 +248,19 @@ void BallTracker::publishHeadJoint(double pan, double tilt)
 
   head_angle_msg.position.push_back(pan);
   head_angle_msg.position.push_back(tilt);
+
+  head_joint_offset_pub_.publish(head_angle_msg);
+}
+
+void BallTracker::goInit()
+{
+  sensor_msgs::JointState head_angle_msg;
+
+  head_angle_msg.name.push_back("head_pan");
+  head_angle_msg.name.push_back("head_tilt");
+
+  head_angle_msg.position.push_back(0.0);
+  head_angle_msg.position.push_back(0.0);
 
   head_joint_pub_.publish(head_angle_msg);
 }

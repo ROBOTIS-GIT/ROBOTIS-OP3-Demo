@@ -497,12 +497,12 @@ void SoccerDemo::stopSoccerMode()
 
 void SoccerDemo::handleKick(int ball_position)
 {
-  usleep(1000 * 1000);
+  usleep(1500 * 1000);
 
   // change to motion module
   setModuleToDemo("action_module");
 
-  usleep(1500 * 1000);
+  //usleep(1500 * 1000);
 
   if (handleFallen(stand_state_) == true || enable_ == false)
     return;

@@ -56,6 +56,7 @@ public:
   void stopTracking();
 
   void setUsingHeadScan(bool use_scan);
+  void goInit();
 
   double getPanOfBall()
   {
@@ -89,6 +90,7 @@ protected:
 
   //image publisher/subscriber
   ros::Publisher module_control_pub_;
+  ros::Publisher head_joint_offset_pub_;
   ros::Publisher head_joint_pub_;
   ros::Publisher head_scan_pub_;
 
