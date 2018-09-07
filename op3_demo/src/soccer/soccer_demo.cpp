@@ -123,22 +123,22 @@ void SoccerDemo::process()
       {
       case BallTracker::Found:
         ball_follower_.processFollowing(ball_tracker_.getPanOfBall(), ball_tracker_.getTiltOfBall(), 0.0);
-//        if(tracking_status_ != tracking_status)
-//          setRGBLED(0x1F, 0x1F, 0x1F);
+        //        if(tracking_status_ != tracking_status)
+        //          setRGBLED(0x1F, 0x1F, 0x1F);
         break;
 
       case BallTracker::NotFound:
         ball_follower_.waitFollowing();
-//        if(tracking_status_ != tracking_status)
-//          setRGBLED(0, 0, 0);
+        //        if(tracking_status_ != tracking_status)
+        //          setRGBLED(0, 0, 0);
         break;
 
       default:
         break;
       }
 
-//      if(tracking_status != tracking_status_)
-//        tracking_status_ = tracking_status;
+      //      if(tracking_status != tracking_status_)
+      //        tracking_status_ = tracking_status;
     }
 
     // check fallen states
@@ -224,33 +224,47 @@ void SoccerDemo::callbackThread()
 
 void SoccerDemo::trackingThread()
 {
-  if(enable_ == false || on_tracking_ball_ == false)
-    return;
 
-  // ball tracking
-  int tracking_status;
+  //set node loop rate
+  ros::Rate loop_rate(SPIN_RATE);
 
-  tracking_status = ball_tracker_.processTracking();
+  ball_tracker_.startTracking();
 
-  // set led
-  switch(tracking_status)
+  //node loop
+  while (ros::ok())
   {
-  case BallTracker::Found:
-    if(tracking_status_ != tracking_status)
-      setRGBLED(0x1F, 0x1F, 0x1F);
-    break;
 
-  case BallTracker::NotFound:
-    if(tracking_status_ != tracking_status)
-      setRGBLED(0, 0, 0);
-    break;
+    if(enable_ == false || on_tracking_ball_ == false)
+      return;
 
-  default:
-    break;
+    // ball tracking
+    int tracking_status;
+
+    tracking_status = ball_tracker_.processTracking();
+
+    // set led
+    switch(tracking_status)
+    {
+    case BallTracker::Found:
+      if(tracking_status_ != tracking_status)
+        setRGBLED(0x1F, 0x1F, 0x1F);
+      break;
+
+    case BallTracker::NotFound:
+      if(tracking_status_ != tracking_status)
+        setRGBLED(0, 0, 0);
+      break;
+
+    default:
+      break;
+    }
+
+    if(tracking_status != tracking_status_)
+      tracking_status_ = tracking_status;
+
+    //relax to fit output rate
+    loop_rate.sleep();
   }
-
-  if(tracking_status != tracking_status_)
-    tracking_status_ = tracking_status;
 }
 
 void SoccerDemo::setBodyModuleToDemo(const std::string &body_module, bool with_head_control)
