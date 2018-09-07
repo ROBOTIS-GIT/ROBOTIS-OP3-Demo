@@ -72,6 +72,7 @@ class SoccerDemo : public OPDemo
 
   void processThread();
   void callbackThread();
+  void trackingThread();
 
   void setBodyModuleToDemo(const std::string &body_module, bool with_head_control = true);
   void setModuleToDemo(const std::string &module_name);
@@ -114,7 +115,8 @@ class SoccerDemo : public OPDemo
 
   bool is_grass_;
   int wait_count_;
-    bool on_following_ball_;
+  bool on_following_ball_;
+  bool on_tracking_ball_;
   bool restart_soccer_;
   bool start_following_;
   bool stop_following_;
