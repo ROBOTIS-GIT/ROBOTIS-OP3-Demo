@@ -234,34 +234,33 @@ void SoccerDemo::trackingThread()
   while (ros::ok())
   {
 
-    if(enable_ == false || on_tracking_ball_ == false)
-      return;
-
-    // ball tracking
-    int tracking_status;
-
-    tracking_status = ball_tracker_.processTracking();
-
-    // set led
-    switch(tracking_status)
+    if(enable_ == true && on_tracking_ball_ == true)
     {
-    case BallTracker::Found:
-      if(tracking_status_ != tracking_status)
-        setRGBLED(0x1F, 0x1F, 0x1F);
-      break;
+      // ball tracking
+      int tracking_status;
 
-    case BallTracker::NotFound:
-      if(tracking_status_ != tracking_status)
-        setRGBLED(0, 0, 0);
-      break;
+      tracking_status = ball_tracker_.processTracking();
 
-    default:
-      break;
+      // set led
+      switch(tracking_status)
+      {
+      case BallTracker::Found:
+        if(tracking_status_ != tracking_status)
+          setRGBLED(0x1F, 0x1F, 0x1F);
+        break;
+
+      case BallTracker::NotFound:
+        if(tracking_status_ != tracking_status)
+          setRGBLED(0, 0, 0);
+        break;
+
+      default:
+        break;
+      }
+
+      if(tracking_status != tracking_status_)
+        tracking_status_ = tracking_status;
     }
-
-    if(tracking_status != tracking_status_)
-      tracking_status_ = tracking_status;
-
     //relax to fit output rate
     loop_rate.sleep();
   }
