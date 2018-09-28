@@ -89,11 +89,6 @@ void SoccerDemo::process()
   if(enable_ == false)
     return;
 
-  // ball tracking
-  int tracking_status = tracking_status_;
-
-  //tracking_status = ball_tracker_.processTracking();
-
   // check to start
   if (start_following_ == true)
   {
@@ -119,26 +114,19 @@ void SoccerDemo::process()
     // ball following
     if (on_following_ball_ == true)
     {
-      switch(tracking_status)
+      switch(tracking_status_)
       {
       case BallTracker::Found:
         ball_follower_.processFollowing(ball_tracker_.getPanOfBall(), ball_tracker_.getTiltOfBall(), 0.0);
-        //        if(tracking_status_ != tracking_status)
-        //          setRGBLED(0x1F, 0x1F, 0x1F);
         break;
 
       case BallTracker::NotFound:
         ball_follower_.waitFollowing();
-        //        if(tracking_status_ != tracking_status)
-        //          setRGBLED(0, 0, 0);
         break;
 
       default:
         break;
       }
-
-      //      if(tracking_status != tracking_status_)
-      //        tracking_status_ = tracking_status;
     }
 
     // check fallen states
