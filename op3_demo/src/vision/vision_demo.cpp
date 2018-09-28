@@ -1,32 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2016, ROBOTIS CO., LTD.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * * Redistributions of source code must retain the above copyright notice, this
- *   list of conditions and the following disclaimer.
- *
- * * Redistributions in binary form must reproduce the above copyright notice,
- *   this list of conditions and the following disclaimer in the documentation
- *   and/or other materials provided with the distribution.
- *
- * * Neither the name of ROBOTIS nor the names of its
- *   contributors may be used to endorse or promote products derived from
- *   this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+* Copyright 2017 ROBOTIS CO., LTD.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*******************************************************************************/
 
 /* Author: Kayman Jung */
 
@@ -37,7 +23,6 @@ namespace robotis_op
 
 VisionDemo::VisionDemo()
     : SPIN_RATE(30),
-      is_tracking_(false),
       tracking_status_(FaceTracker::Waiting)
 {
   enable_ = false;
@@ -58,17 +43,19 @@ void VisionDemo::setDemoEnable()
   // change to motion module
   setModuleToDemo("action_module");
 
-  usleep(100 * 1000);
-
   playMotion(InitPose);
 
   usleep(1500 * 1000);
 
   setModuleToDemo("head_control_module");
 
-  usleep(10 * 1000);
-
   enable_ = true;
+
+  // send command to start face_tracking
+  std_msgs::Bool command;
+  command.data = enable_;
+  face_tracking_command_pub_.publish(command);
+
   face_tracker_.startTracking();
 
   ROS_INFO("Start Vision Demo");
@@ -79,9 +66,12 @@ void VisionDemo::setDemoDisable()
 {
 
   face_tracker_.stopTracking();
-  is_tracking_ = false;
   tracking_status_ = FaceTracker::Waiting;
   enable_ = false;
+
+  std_msgs::Bool command;
+  command.data = enable_;
+  face_tracking_command_pub_.publish(command);
 }
 
 void VisionDemo::process()
@@ -107,9 +97,6 @@ void VisionDemo::process()
 
   if(tracking_status != FaceTracker::Waiting)
     tracking_status_ = tracking_status;
-
-  //is_tracking_ = is_tracked;
-  std::cout << "Tracking : " << tracking_status << std::endl;
 }
 
 void VisionDemo::processThread()
@@ -136,9 +123,12 @@ void VisionDemo::callbackThread()
   module_control_pub_ = nh.advertise<std_msgs::String>("/robotis/enable_ctrl_module", 0);
   motion_index_pub_ = nh.advertise<std_msgs::Int32>("/robotis/action/page_num", 0);
   rgb_led_pub_ = nh.advertise<robotis_controller_msgs::SyncWriteItem>("/robotis/sync_write_item", 0);
+  face_tracking_command_pub_ = nh.advertise<std_msgs::Bool>("/face_tracking/command", 0);
 
   buttuon_sub_ = nh.subscribe("/robotis/open_cr/button", 1, &VisionDemo::buttonHandlerCallback, this);
   faceCoord_sub_ = nh.subscribe("/faceCoord", 1, &VisionDemo::facePositionCallback, this);
+
+  set_joint_module_client_ = nh.serviceClient<robotis_controller_msgs::SetModule>("/robotis/set_present_ctrl_modules");
 
   while (nh.ok())
   {
@@ -155,29 +145,7 @@ void VisionDemo::buttonHandlerCallback(const std_msgs::String::ConstPtr& msg)
 
   if (msg->data == "start")
   {
-//    switch (play_status_)
-//      {
-//        case PlayAction:
-//        {
-//          pauseProcess();
-//          break;
-//        }
-//
-//        case PauseAction:
-//        {
-//          resumeProcess();
-//          break;
-//        }
-//
-//        case StopAction:
-//        {
-//          resumeProcess();
-//          break;
-//        }
-//
-//        default:
-//          break;
-//      }
+
   }
   else if (msg->data == "mode")
   {
@@ -185,13 +153,39 @@ void VisionDemo::buttonHandlerCallback(const std_msgs::String::ConstPtr& msg)
   }
 }
 
+void VisionDemo::demoCommandCallback(const std_msgs::String::ConstPtr &msg)
+{
+  if (enable_ == false)
+    return;
+
+  if (msg->data == "start")
+  {
+
+  }
+  else if (msg->data == "stop")
+  {
+
+  }
+}
+
 void VisionDemo::setModuleToDemo(const std::string &module_name)
 {
-  std_msgs::String control_msg;
-  control_msg.data = module_name;
+  callServiceSettingModule(module_name);
+  ROS_INFO_STREAM("enable module : " << module_name);
+}
 
-  module_control_pub_.publish(control_msg);
-  std::cout << "enable module : " << module_name << std::endl;
+void VisionDemo::callServiceSettingModule(const std::string &module_name)
+{
+    robotis_controller_msgs::SetModule set_module_srv;
+    set_module_srv.request.module_name = module_name;
+
+    if (set_joint_module_client_.call(set_module_srv) == false)
+    {
+      ROS_ERROR("Failed to set module");
+      return;
+    }
+
+    return ;
 }
 
 void VisionDemo::facePositionCallback(const std_msgs::Int32MultiArray::ConstPtr &msg)

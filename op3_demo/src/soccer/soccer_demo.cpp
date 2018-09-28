@@ -1,32 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2016, ROBOTIS CO., LTD.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * * Redistributions of source code must retain the above copyright notice, this
- *   list of conditions and the following disclaimer.
- *
- * * Redistributions in binary form must reproduce the above copyright notice,
- *   this list of conditions and the following disclaimer in the documentation
- *   and/or other materials provided with the distribution.
- *
- * * Neither the name of ROBOTIS nor the names of its
- *   contributors may be used to endorse or promote products derived from
- *   this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+* Copyright 2017 ROBOTIS CO., LTD.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*******************************************************************************/
 
 /* Author: Kayman Jung */
 
@@ -36,32 +22,34 @@ namespace robotis_op
 {
 
 SoccerDemo::SoccerDemo()
-    : FALL_FORWARD_LIMIT(60),
-      FALL_BACK_LIMIT(-60),
-      SPIN_RATE(30),
-      DEBUG_PRINT(false),
-      wait_count_(0),
-      on_following_ball_(false),
-      restart_soccer_(false),
-      start_following_(false),
-      stop_following_(false),
-      stop_fallen_check_(false),
-      robot_status_(Waited),
-      stand_state_(Stand),
-      tracking_status_(BallTracker::Waiting),
-      present_pitch_(0)
+  : FALL_FORWARD_LIMIT(60),
+    FALL_BACK_LIMIT(-60),
+    SPIN_RATE(30),
+    DEBUG_PRINT(false),
+    wait_count_(0),
+    on_following_ball_(false),
+    on_tracking_ball_(false),
+    restart_soccer_(false),
+    start_following_(false),
+    stop_following_(false),
+    stop_fallen_check_(false),
+    robot_status_(Waited),
+    stand_state_(Stand),
+    tracking_status_(BallTracker::Waiting),
+    present_pitch_(0)
 {
   //init ros
   enable_ = false;
 
   ros::NodeHandle nh(ros::this_node::getName());
 
-  std::string default_path = ros::package::getPath("op3_gui_demo") + "/config/demo_config.yaml";
+  std::string default_path = ros::package::getPath("op3_gui_demo") + "/config/gui_config.yaml";
   std::string path = nh.param<std::string>("demo_config", default_path);
   parseJointNameFromYaml(path);
 
   boost::thread queue_thread = boost::thread(boost::bind(&SoccerDemo::callbackThread, this));
   boost::thread process_thread = boost::thread(boost::bind(&SoccerDemo::processThread, this));
+  boost::thread tracking_thread = boost::thread(boost::bind(&SoccerDemo::trackingThread, this));
 
   is_grass_ = nh.param<bool>("grass_demo", false);
 }
@@ -80,8 +68,6 @@ void SoccerDemo::setDemoEnable()
 
 void SoccerDemo::setDemoDisable()
 {
-  setModuleToDemo("base_module");
-
   // handle disable procedure
   ball_tracker_.stopTracking();
   ball_follower_.stopFollowing();
@@ -89,6 +75,7 @@ void SoccerDemo::setDemoDisable()
   enable_ = false;
   wait_count_ = 0;
   on_following_ball_ = false;
+  on_tracking_ball_ = false;
   restart_soccer_ = false;
   start_following_ = false;
   stop_following_ = false;
@@ -99,11 +86,8 @@ void SoccerDemo::setDemoDisable()
 
 void SoccerDemo::process()
 {
-  // ball tracking
-  bool is_tracked;
-  int tracking_status;
-
-  tracking_status = ball_tracker_.processTracking();
+  if(enable_ == false)
+    return;
 
   // check to start
   if (start_following_ == true)
@@ -114,9 +98,6 @@ void SoccerDemo::process()
 
     wait_count_ = 1 * SPIN_RATE;
   }
-
-  //for debug
-  //return;
 
   // check to stop
   if (stop_following_ == true)
@@ -133,57 +114,50 @@ void SoccerDemo::process()
     // ball following
     if (on_following_ball_ == true)
     {
-      switch(tracking_status)
+      switch(tracking_status_)
       {
-        case BallTracker::Found:
-          ball_follower_.processFollowing(ball_tracker_.getPanOfBall(), ball_tracker_.getTiltOfBall(), 0.0);
-          if(tracking_status_ != tracking_status)
-            setRGBLED(0x1F, 0x1F, 0x1F);
-          break;
+      case BallTracker::Found:
+        ball_follower_.processFollowing(ball_tracker_.getPanOfBall(), ball_tracker_.getTiltOfBall(), 0.0);
+        break;
 
-        case BallTracker::NotFound:
-          ball_follower_.waitFollowing();
-          if(tracking_status_ != tracking_status)
-            setRGBLED(0, 0, 0);
-          break;
+      case BallTracker::NotFound:
+        ball_follower_.waitFollowing();
+        break;
 
-        default:
-          break;
+      default:
+        break;
       }
-
-      if(tracking_status != tracking_status_)
-        tracking_status_ = tracking_status;
     }
 
     // check fallen states
     switch (stand_state_)
     {
-      case Stand:
+    case Stand:
+    {
+      // check restart soccer
+      if (restart_soccer_ == true)
       {
-        // check restart soccer
-        if (restart_soccer_ == true)
-        {
-          restart_soccer_ = false;
-          startSoccerMode();
-          break;
-        }
-
-        // check states for kick
-        int ball_position = ball_follower_.getBallPosition();
-        if (ball_position != robotis_op::BallFollower::NotFound)
-        {
-          ball_follower_.stopFollowing();
-          handleKick(ball_position);
-        }
+        restart_soccer_ = false;
+        startSoccerMode();
         break;
       }
-        // fallen state : Fallen_Forward, Fallen_Behind
-      default:
+
+      // check states for kick
+      int ball_position = ball_follower_.getBallPosition();
+      if (ball_position != robotis_op::BallFollower::NotFound)
       {
         ball_follower_.stopFollowing();
-        handleFallen(stand_state_);
-        break;
+        handleKick(ball_position);
       }
+      break;
+    }
+      // fallen state : Fallen_Forward, Fallen_Behind
+    default:
+    {
+      ball_follower_.stopFollowing();
+      handleFallen(stand_state_);
+      break;
+    }
     }
   }
   else
@@ -222,16 +196,61 @@ void SoccerDemo::callbackThread()
   rgb_led_pub_ = nh.advertise<robotis_controller_msgs::SyncWriteItem>("/robotis/sync_write_item", 0);
 
   buttuon_sub_ = nh.subscribe("/robotis/open_cr/button", 1, &SoccerDemo::buttonHandlerCallback, this);
-  demo_command_sub_ = nh.subscribe("/ball_tracker/command", 1, &SoccerDemo::demoCommandCallback, this);
+  demo_command_sub_ = nh.subscribe("/robotis/demo_command", 1, &SoccerDemo::demoCommandCallback, this);
   imu_data_sub_ = nh.subscribe("/robotis/open_cr/imu", 1, &SoccerDemo::imuDataCallback, this);
 
   is_running_client_ = nh.serviceClient<op3_action_module_msgs::IsRunning>("/robotis/action/is_running");
+  set_joint_module_client_ = nh.serviceClient<robotis_controller_msgs::SetJointModule>("/robotis/set_present_joint_ctrl_modules");
 
   while (nh.ok())
   {
     ros::spinOnce();
 
     usleep(1000);
+  }
+}
+
+void SoccerDemo::trackingThread()
+{
+
+  //set node loop rate
+  ros::Rate loop_rate(SPIN_RATE);
+
+  ball_tracker_.startTracking();
+
+  //node loop
+  while (ros::ok())
+  {
+
+    if(enable_ == true && on_tracking_ball_ == true)
+    {
+      // ball tracking
+      int tracking_status;
+
+      tracking_status = ball_tracker_.processTracking();
+
+      // set led
+      switch(tracking_status)
+      {
+      case BallTracker::Found:
+        if(tracking_status_ != tracking_status)
+          setRGBLED(0x1F, 0x1F, 0x1F);
+        break;
+
+      case BallTracker::NotFound:
+        if(tracking_status_ != tracking_status)
+          setRGBLED(0, 0, 0);
+        break;
+
+      default:
+        break;
+      }
+
+      if(tracking_status != tracking_status_)
+        tracking_status_ = tracking_status;
+    }
+    //relax to fit output rate
+    loop_rate.sleep();
   }
 }
 
@@ -266,12 +285,15 @@ void SoccerDemo::setBodyModuleToDemo(const std::string &body_module, bool with_h
   if (control_msg.joint_name.size() == 0)
     return;
 
-  module_control_pub_.publish(control_msg);
+  callServiceSettingModule(control_msg);
   std::cout << "enable module of body : " << body_module << std::endl;
 }
 
 void SoccerDemo::setModuleToDemo(const std::string &module_name)
 {
+  if(enable_ == false)
+    return;
+
   robotis_controller_msgs::JointCtrlModule control_msg;
   std::map<int, std::string>::iterator joint_iter;
 
@@ -285,8 +307,23 @@ void SoccerDemo::setModuleToDemo(const std::string &module_name)
   if (control_msg.joint_name.size() == 0)
     return;
 
-  module_control_pub_.publish(control_msg);
+  callServiceSettingModule(control_msg);
   std::cout << "enable module : " << module_name << std::endl;
+}
+
+void SoccerDemo::callServiceSettingModule(const robotis_controller_msgs::JointCtrlModule &modules)
+{
+  robotis_controller_msgs::SetJointModule set_joint_srv;
+  set_joint_srv.request.joint_name = modules.joint_name;
+  set_joint_srv.request.module_name = modules.module_name;
+
+  if (set_joint_module_client_.call(set_joint_srv) == false)
+  {
+    ROS_ERROR("Failed to set module");
+    return;
+  }
+
+  return ;
 }
 
 void SoccerDemo::parseJointNameFromYaml(const std::string &path)
@@ -428,18 +465,13 @@ void SoccerDemo::startSoccerMode()
 {
   setModuleToDemo("action_module");
 
-  usleep(10 * 1000);
-
   playMotion(WalkingReady);
-
-  usleep(1500 * 1000);
 
   setBodyModuleToDemo("walking_module");
 
-  usleep(10 * 1000);
-
   ROS_INFO("Start Soccer Demo");
   on_following_ball_ = true;
+  on_tracking_ball_ = true;
   start_following_ = true;
 }
 
@@ -447,36 +479,37 @@ void SoccerDemo::stopSoccerMode()
 {
   ROS_INFO("Stop Soccer Demo");
   on_following_ball_ = false;
+  on_tracking_ball_ = false;
   stop_following_ = true;
 }
 
 void SoccerDemo::handleKick(int ball_position)
 {
-  usleep(1000 * 1000);
+  usleep(1500 * 1000);
 
   // change to motion module
   setModuleToDemo("action_module");
 
-  usleep(1500 * 1000);
+  //usleep(1500 * 1000);
 
-  if (handleFallen(stand_state_) == true)
+  if (handleFallen(stand_state_) == true || enable_ == false)
     return;
 
   // kick motion
   switch (ball_position)
   {
-    case robotis_op::BallFollower::OnRight:
-      std::cout << "Kick Motion [R]: " << ball_position << std::endl;
-      playMotion(is_grass_ ? RightKick + ForGrass : RightKick);
-      break;
+  case robotis_op::BallFollower::OnRight:
+    std::cout << "Kick Motion [R]: " << ball_position << std::endl;
+    playMotion(is_grass_ ? RightKick + ForGrass : RightKick);
+    break;
 
-    case robotis_op::BallFollower::OnLeft:
-      std::cout << "Kick Motion [L]: " << ball_position << std::endl;
-      playMotion(is_grass_ ? LeftKick + ForGrass : LeftKick);
-      break;
+  case robotis_op::BallFollower::OnLeft:
+    std::cout << "Kick Motion [L]: " << ball_position << std::endl;
+    playMotion(is_grass_ ? LeftKick + ForGrass : LeftKick);
+    break;
 
-    default:
-      break;
+  default:
+    break;
   }
 
   on_following_ball_ = false;
@@ -501,23 +534,21 @@ bool SoccerDemo::handleFallen(int fallen_status)
   // change to motion module
   setModuleToDemo("action_module");
 
-  usleep(600 * 1000);
-
   // getup motion
   switch (fallen_status)
   {
-    case Fallen_Forward:
-      std::cout << "Getup Motion [F]: " << std::endl;
-      playMotion(is_grass_ ? GetUpFront + ForGrass : GetUpFront);
-      break;
+  case Fallen_Forward:
+    std::cout << "Getup Motion [F]: " << std::endl;
+    playMotion(is_grass_ ? GetUpFront + ForGrass : GetUpFront);
+    break;
 
-    case Fallen_Behind:
-      std::cout << "Getup Motion [B]: " << std::endl;
-      playMotion(is_grass_ ? GetUpBack + ForGrass : GetUpBack);
-      break;
+  case Fallen_Behind:
+    std::cout << "Getup Motion [B]: " << std::endl;
+    playMotion(is_grass_ ? GetUpBack + ForGrass : GetUpBack);
+    break;
 
-    default:
-      break;
+  default:
+    break;
   }
 
   while(isActionRunning() == true)

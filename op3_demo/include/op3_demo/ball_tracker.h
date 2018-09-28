@@ -1,32 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2016, ROBOTIS CO., LTD.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * * Redistributions of source code must retain the above copyright notice, this
- *   list of conditions and the following disclaimer.
- *
- * * Redistributions in binary form must reproduce the above copyright notice,
- *   this list of conditions and the following disclaimer in the documentation
- *   and/or other materials provided with the distribution.
- *
- * * Neither the name of ROBOTIS nor the names of its
- *   contributors may be used to endorse or promote products derived from
- *   this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+* Copyright 2017 ROBOTIS CO., LTD.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*******************************************************************************/
 
 /* Author: Kayman Jung */
 
@@ -34,16 +20,16 @@
 #define BALL_TRACKING_H_
 
 #include <math.h>
-#include <yaml-cpp/yaml.h>
-
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Int32.h>
 #include <sensor_msgs/JointState.h>
+#include <geometry_msgs/Point.h>
+#include <yaml-cpp/yaml.h>
 
 #include "robotis_controller_msgs/JointCtrlModule.h"
-#include "ball_detector/circleSetStamped.h"
+#include "op3_ball_detector/CircleSetStamped.h"
 #include "op3_walking_module_msgs/WalkingParam.h"
 #include "op3_walking_module_msgs/GetWalkingParam.h"
 
@@ -53,7 +39,7 @@ namespace robotis_op
 // head tracking for looking the ball
 class BallTracker
 {
- public:
+public:
   enum TrackingStatus
   {
     NotFound = -1,
@@ -70,6 +56,7 @@ class BallTracker
   void stopTracking();
 
   void setUsingHeadScan(bool use_scan);
+  void goInit();
 
   double getPanOfBall()
   {
@@ -86,14 +73,14 @@ class BallTracker
     return current_ball_bottom_;
   }
 
- protected:
+protected:
   const double FOV_WIDTH;
   const double FOV_HEIGHT;
   const int NOT_FOUND_THRESHOLD;
   const int WAITING_THRESHOLD;
   const bool DEBUG_PRINT;
 
-  void ballPositionCallback(const ball_detector::circleSetStamped::ConstPtr &msg);
+  void ballPositionCallback(const op3_ball_detector::CircleSetStamped::ConstPtr &msg);
   void ballTrackerCommandCallback(const std_msgs::String::ConstPtr &msg);
   void publishHeadJoint(double pan, double tilt);
   void scanBall();
@@ -103,8 +90,11 @@ class BallTracker
 
   //image publisher/subscriber
   ros::Publisher module_control_pub_;
+  ros::Publisher head_joint_offset_pub_;
   ros::Publisher head_joint_pub_;
   ros::Publisher head_scan_pub_;
+
+  //  ros::Publisher error_pub_;
 
   ros::Publisher motion_index_pub_;
 
@@ -121,7 +111,9 @@ class BallTracker
   bool on_tracking_;
   double current_ball_pan_, current_ball_tilt_;
   double current_ball_bottom_;
+  double x_error_sum_, y_error_sum_;
   ros::Time prev_time_;
+  double p_gain_, d_gain_, i_gain_;
 
 };
 }

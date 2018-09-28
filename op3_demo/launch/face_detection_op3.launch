@@ -7,15 +7,16 @@
   <arg name="face_cascade_name_4"  default="$(find face_detection)/include/face_detection/lbpCascades/lbpcascade_frontalface.xml" />
 
   <node pkg="face_detection" type="face_tracking" name="face_tracking"
-      args="$(arg face_cascade_name_0)
-      $(arg face_cascade_name_1)
-      $(arg face_cascade_name_2)
-      $(arg face_cascade_name_3)
-      $(arg face_cascade_name_4)"
-      output="screen">      
-        <param name="imageInput" type="string" value="/usb_cam_node/image_raw" />
-        <param name="displayed_Image" type="int" value="0" />
-        <!-- <param name="publish" type="int" value="2" /> -->
-        <param name="publish" type="int" value="3" />
+        args="$(arg face_cascade_name_0)
+              $(arg face_cascade_name_1)
+              $(arg face_cascade_name_2)
+              $(arg face_cascade_name_3)
+              $(arg face_cascade_name_4)"
+         output="screen">      
+    <param name="imageInput" type="string" value="/usb_cam_node/image_raw" />
+    <param name="displayed_Image" type="int" value="0" />
+    <!-- <param name="publish" type="int" value="2" /> -->
+    <param name="publish" type="int" value="3" />
+		<param name="start_condition" type="bool" value="false" />
   </node>
 </launch>

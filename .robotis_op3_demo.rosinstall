@@ -1,0 +1,2 @@
+- git: {local-name: robotis_op3_tools, uri: 'https://github.com/ROBOTIS-GIT/ROBOTIS-OP3-Tools.git', version: master}
+- git: {local-name: humanoid_navigation, uri: 'https://github.com/ROBOTIS-GIT/humanoid_navigation.git', version: master}

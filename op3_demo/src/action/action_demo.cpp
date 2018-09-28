@@ -1,32 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2016, ROBOTIS CO., LTD.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * * Redistributions of source code must retain the above copyright notice, this
- *   list of conditions and the following disclaimer.
- *
- * * Redistributions in binary form must reproduce the above copyright notice,
- *   this list of conditions and the following disclaimer in the documentation
- *   and/or other materials provided with the distribution.
- *
- * * Neither the name of ROBOTIS nor the names of its
- *   contributors may be used to endorse or promote products derived from
- *   this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+* Copyright 2017 ROBOTIS CO., LTD.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*******************************************************************************/
 
 /* Author: Kayman Jung */
 
@@ -45,11 +31,13 @@ ActionDemo::ActionDemo()
 
   ros::NodeHandle nh(ros::this_node::getName());
 
-  std::string default_path = ros::package::getPath("op3_demo") + "/script/action_script.yaml";
+  std::string default_path = ros::package::getPath("op3_demo") + "/list/action_script.yaml";
   script_path_ = nh.param<std::string>("action_script", default_path);
 
   std::string default_play_list = "default";
   play_list_name_ = nh.param<std::string>("action_script_play_list", default_play_list);
+
+  demo_command_sub_ = nh.subscribe("/robotis/demo_command", 1, &ActionDemo::demoCommandCallback, this);
 
   parseActionScript (script_path_);
 
@@ -65,8 +53,6 @@ void ActionDemo::setDemoEnable()
 {
   setModuleToDemo("action_module");
 
-  usleep(10 * 1000);
-
   enable_ = true;
 
   ROS_INFO_COND(DEBUG_PRINT, "Start ActionScript Demo");
@@ -81,7 +67,7 @@ void ActionDemo::setDemoDisable()
   stopProcess();
 
   enable_ = false;
-
+  ROS_WARN("Set Action demo disable");
   play_list_.resize(0);
 }
 
@@ -122,6 +108,8 @@ void ActionDemo::process()
       stopMP3();
       brakeAction();
 
+      play_status_ = ReadyAction;
+
       break;
     }
 
@@ -129,6 +117,8 @@ void ActionDemo::process()
     {
       stopMP3();
       stopAction();
+
+      play_status_ = ReadyAction;
 
       break;
     }
@@ -189,6 +179,7 @@ void ActionDemo::callbackThread()
   buttuon_sub_ = nh.subscribe("/robotis/open_cr/button", 1, &ActionDemo::buttonHandlerCallback, this);
 
   is_running_client_ = nh.serviceClient<op3_action_module_msgs::IsRunning>("/robotis/action/is_running");
+  set_joint_module_client_ = nh.serviceClient<robotis_controller_msgs::SetModule>("/robotis/set_present_ctrl_modules");
 
   while (nh.ok())
   {
@@ -367,11 +358,37 @@ void ActionDemo::buttonHandlerCallback(const std_msgs::String::ConstPtr& msg)
 
 void ActionDemo::setModuleToDemo(const std::string &module_name)
 {
-  std_msgs::String control_msg;
-  control_msg.data = "action_module";
+  callServiceSettingModule(module_name);
+  ROS_INFO_STREAM("enable module : " << module_name);
+}
 
-  module_control_pub_.publish(control_msg);
-  std::cout << "enable module : " << module_name << std::endl;
+void ActionDemo::callServiceSettingModule(const std::string &module_name)
+{
+    robotis_controller_msgs::SetModule set_module_srv;
+    set_module_srv.request.module_name = module_name;
+
+    if (set_joint_module_client_.call(set_module_srv) == false)
+    {
+      ROS_ERROR("Failed to set module");
+      return;
+    }
+
+    return ;
+}
+
+void ActionDemo::demoCommandCallback(const std_msgs::String::ConstPtr &msg)
+{
+  if (enable_ == false)
+    return;
+
+  if (msg->data == "start")
+  {
+    resumeProcess();
+  }
+  else if (msg->data == "stop")
+  {
+    pauseProcess();
+  }
 }
 
 } /* namespace robotis_op */
