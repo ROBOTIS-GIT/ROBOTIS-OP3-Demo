@@ -43,8 +43,9 @@ class BallFollower
   enum
   {
     NotFound = 0,
-    OnRight = 1,
-    OnLeft = 2,
+    OutOfRange = 1,
+    OnRight = 2,
+    OnLeft = 3,
   };
 
   BallFollower();
