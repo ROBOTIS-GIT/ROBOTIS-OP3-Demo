@@ -22,8 +22,9 @@ namespace robotis_op
 {
 
 VisionDemo::VisionDemo()
-    : SPIN_RATE(30),
-      tracking_status_(FaceTracker::Waiting)
+  : SPIN_RATE(30),
+    TIME_TO_INIT(10),
+    tracking_status_(FaceTracker::Waiting)
 {
   enable_ = false;
 
@@ -40,6 +41,9 @@ VisionDemo::~VisionDemo()
 
 void VisionDemo::setDemoEnable()
 {
+  // set prev time for timer
+  prev_time_ = ros::Time::now();
+
   // change to motion module
   setModuleToDemo("action_module");
 
@@ -78,22 +82,34 @@ void VisionDemo::process()
 {
   int tracking_status = face_tracker_.processTracking();
 
-  if(tracking_status_ != tracking_status)
+
+
+  switch(tracking_status)
   {
-    switch(tracking_status)
+  case FaceTracker::Found:
+    if(tracking_status_ != tracking_status)
+      setRGBLED(0x1F, 0x1F, 0x1F);
+    prev_time_ = ros::Time::now();
+    break;
+
+  case FaceTracker::NotFound:
+  {
+    if(tracking_status_ != tracking_status)
+      setRGBLED(0, 0, 0);
+
+    ros::Time curr_time = ros::Time::now();
+    ros::Duration dur = curr_time - prev_time_;
+    if(dur.sec > TIME_TO_INIT)
     {
-      case FaceTracker::Found:
-        setRGBLED(0x1F, 0x1F, 0x1F);
-        break;
-
-      case FaceTracker::NotFound:
-        setRGBLED(0, 0, 0);
-        break;
-
-      default:
-        break;
+      face_tracker_.goInit(0,0);
+      prev_time_ = curr_time;
     }
+    break;
   }
+  default:
+    break;
+  }
+
 
   if(tracking_status != FaceTracker::Waiting)
     tracking_status_ = tracking_status;
@@ -176,16 +192,16 @@ void VisionDemo::setModuleToDemo(const std::string &module_name)
 
 void VisionDemo::callServiceSettingModule(const std::string &module_name)
 {
-    robotis_controller_msgs::SetModule set_module_srv;
-    set_module_srv.request.module_name = module_name;
+  robotis_controller_msgs::SetModule set_module_srv;
+  set_module_srv.request.module_name = module_name;
 
-    if (set_joint_module_client_.call(set_module_srv) == false)
-    {
-      ROS_ERROR("Failed to set module");
-      return;
-    }
+  if (set_joint_module_client_.call(set_module_srv) == false)
+  {
+    ROS_ERROR("Failed to set module");
+    return;
+  }
 
-    return ;
+  return ;
 }
 
 void VisionDemo::facePositionCallback(const std_msgs::Int32MultiArray::ConstPtr &msg)
