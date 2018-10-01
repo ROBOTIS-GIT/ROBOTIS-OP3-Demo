@@ -45,6 +45,7 @@ class VisionDemo : public OPDemo
 
  protected:
   const int SPIN_RATE;
+  const int TIME_TO_INIT;
 
   void processThread();
   void callbackThread();
@@ -73,6 +74,8 @@ class VisionDemo : public OPDemo
 
   ros::ServiceClient set_joint_module_client_;
   geometry_msgs::Point face_position_;
+
+  ros::Time prev_time_;
 
   int tracking_status_;
 };

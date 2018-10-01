@@ -30,7 +30,8 @@ FaceTracker::FaceTracker()
       count_not_found_(0),
       on_tracking_(false)
 {
-  head_joint_pub_ = nh_.advertise<sensor_msgs::JointState>("/robotis/head_control/set_joint_states_offset", 0);
+  head_joint_offset_pub_ = nh_.advertise<sensor_msgs::JointState>("/robotis/head_control/set_joint_states_offset", 0);
+  head_joint_pub_ = nh_.advertise<sensor_msgs::JointState>("/robotis/head_control/set_joint_states", 0);
   head_scan_pub_ = nh_.advertise<std_msgs::String>("/robotis/head_control/scan_command", 0);
 
   face_position_sub_ = nh_.subscribe("/face_position", 1, &FaceTracker::facePositionCallback, this);
@@ -94,6 +95,19 @@ void FaceTracker::setFacePosition(geometry_msgs::Point &face_position)
   {
     face_position_ = face_position;
   }
+}
+
+void FaceTracker::goInit(double init_pan, double init_tile)
+{
+  sensor_msgs::JointState head_angle_msg;
+
+  head_angle_msg.name.push_back("head_pan");
+  head_angle_msg.name.push_back("head_tilt");
+
+  head_angle_msg.position.push_back(init_pan);
+  head_angle_msg.position.push_back(init_tile);
+
+  head_joint_pub_.publish(head_angle_msg);
 }
 
 int FaceTracker::processTracking()
@@ -172,7 +186,7 @@ void FaceTracker::publishHeadJoint(double pan, double tilt)
   head_angle_msg.position.push_back(pan);
   head_angle_msg.position.push_back(tilt);
 
-  head_joint_pub_.publish(head_angle_msg);
+  head_joint_offset_pub_.publish(head_angle_msg);
 }
 
 void FaceTracker::scanFace()
