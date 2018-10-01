@@ -28,6 +28,7 @@ SoccerDemo::SoccerDemo()
     DEBUG_PRINT(false),
     wait_count_(0),
     on_following_ball_(false),
+    on_tracking_ball_(false),
     restart_soccer_(false),
     start_following_(false),
     stop_following_(false),
@@ -48,6 +49,7 @@ SoccerDemo::SoccerDemo()
 
   boost::thread queue_thread = boost::thread(boost::bind(&SoccerDemo::callbackThread, this));
   boost::thread process_thread = boost::thread(boost::bind(&SoccerDemo::processThread, this));
+  boost::thread tracking_thread = boost::thread(boost::bind(&SoccerDemo::trackingThread, this));
 
   is_grass_ = nh.param<bool>("grass_demo", false);
 }
@@ -73,6 +75,7 @@ void SoccerDemo::setDemoDisable()
   enable_ = false;
   wait_count_ = 0;
   on_following_ball_ = false;
+  on_tracking_ball_ = false;
   restart_soccer_ = false;
   start_following_ = false;
   stop_following_ = false;
@@ -85,11 +88,6 @@ void SoccerDemo::process()
 {
   if(enable_ == false)
     return;
-
-  // ball tracking
-  int tracking_status;
-
-  tracking_status = ball_tracker_.processTracking();
 
   // check to start
   if (start_following_ == true)
@@ -116,26 +114,19 @@ void SoccerDemo::process()
     // ball following
     if (on_following_ball_ == true)
     {
-      switch(tracking_status)
+      switch(tracking_status_)
       {
       case BallTracker::Found:
         ball_follower_.processFollowing(ball_tracker_.getPanOfBall(), ball_tracker_.getTiltOfBall(), 0.0);
-        if(tracking_status_ != tracking_status)
-          setRGBLED(0x1F, 0x1F, 0x1F);
         break;
 
       case BallTracker::NotFound:
         ball_follower_.waitFollowing();
-        if(tracking_status_ != tracking_status)
-          setRGBLED(0, 0, 0);
         break;
 
       default:
         break;
       }
-
-      if(tracking_status != tracking_status_)
-        tracking_status_ = tracking_status;
     }
 
     // check fallen states
@@ -216,6 +207,50 @@ void SoccerDemo::callbackThread()
     ros::spinOnce();
 
     usleep(1000);
+  }
+}
+
+void SoccerDemo::trackingThread()
+{
+
+  //set node loop rate
+  ros::Rate loop_rate(SPIN_RATE);
+
+  ball_tracker_.startTracking();
+
+  //node loop
+  while (ros::ok())
+  {
+
+    if(enable_ == true && on_tracking_ball_ == true)
+    {
+      // ball tracking
+      int tracking_status;
+
+      tracking_status = ball_tracker_.processTracking();
+
+      // set led
+      switch(tracking_status)
+      {
+      case BallTracker::Found:
+        if(tracking_status_ != tracking_status)
+          setRGBLED(0x1F, 0x1F, 0x1F);
+        break;
+
+      case BallTracker::NotFound:
+        if(tracking_status_ != tracking_status)
+          setRGBLED(0, 0, 0);
+        break;
+
+      default:
+        break;
+      }
+
+      if(tracking_status != tracking_status_)
+        tracking_status_ = tracking_status;
+    }
+    //relax to fit output rate
+    loop_rate.sleep();
   }
 }
 
@@ -436,6 +471,7 @@ void SoccerDemo::startSoccerMode()
 
   ROS_INFO("Start Soccer Demo");
   on_following_ball_ = true;
+  on_tracking_ball_ = true;
   start_following_ = true;
 }
 
@@ -443,17 +479,18 @@ void SoccerDemo::stopSoccerMode()
 {
   ROS_INFO("Stop Soccer Demo");
   on_following_ball_ = false;
+  on_tracking_ball_ = false;
   stop_following_ = true;
 }
 
 void SoccerDemo::handleKick(int ball_position)
 {
-  usleep(1000 * 1000);
+  usleep(1500 * 1000);
 
   // change to motion module
   setModuleToDemo("action_module");
 
-  usleep(1500 * 1000);
+  //usleep(1500 * 1000);
 
   if (handleFallen(stand_state_) == true || enable_ == false)
     return;

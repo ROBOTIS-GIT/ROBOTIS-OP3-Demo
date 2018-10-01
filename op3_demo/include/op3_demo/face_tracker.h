@@ -54,6 +54,7 @@ class FaceTracker
 
   void setUsingHeadScan(bool use_scan);
   void setFacePosition(geometry_msgs::Point &face_position);
+  void goInit(double init_pan, double init_tile);
 
   double getPanOfFace()
   {
@@ -79,6 +80,7 @@ class FaceTracker
 
   //image publisher/subscriber
   ros::Publisher module_control_pub_;
+  ros::Publisher head_joint_offset_pub_;
   ros::Publisher head_joint_pub_;
   ros::Publisher head_scan_pub_;
 
