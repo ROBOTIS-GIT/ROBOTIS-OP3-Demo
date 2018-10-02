@@ -91,6 +91,7 @@ class SoccerDemo : public OPDemo
 
   void process();
   void handleKick(int ball_position);
+  void handleKick();
   bool handleFallen(int fallen_status);
 
   void playMotion(int motion_index);
