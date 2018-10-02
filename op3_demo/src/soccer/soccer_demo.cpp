@@ -144,10 +144,12 @@ void SoccerDemo::process()
 
       // check states for kick
       int ball_position = ball_follower_.getBallPosition();
-      if (ball_position != robotis_op::BallFollower::NotFound)
+      bool in_range = ball_follower_.isBallInRange();
+
+      if(in_range == true)
       {
         ball_follower_.stopFollowing();
-        handleKick(ball_position);
+        handleKick();
       }
       break;
     }
@@ -490,12 +492,53 @@ void SoccerDemo::handleKick(int ball_position)
   // change to motion module
   setModuleToDemo("action_module");
 
-  //usleep(1500 * 1000);
+  if (handleFallen(stand_state_) == true || enable_ == false)
+    return;
+
+  // kick motion
+  switch (ball_position)
+  {
+  case robotis_op::BallFollower::OnRight:
+    std::cout << "Kick Motion [R]: " << ball_position << std::endl;
+    playMotion(is_grass_ ? RightKick + ForGrass : RightKick);
+    break;
+
+  case robotis_op::BallFollower::OnLeft:
+    std::cout << "Kick Motion [L]: " << ball_position << std::endl;
+    playMotion(is_grass_ ? LeftKick + ForGrass : LeftKick);
+    break;
+
+  default:
+    break;
+  }
+
+  on_following_ball_ = false;
+  restart_soccer_ = true;
+
+  usleep(2000 * 1000);
+
+  if (handleFallen(stand_state_) == true)
+    return;
+
+  // ceremony
+  //playMotion(Ceremony);
+}
+
+void SoccerDemo::handleKick()
+{
+  usleep(1500 * 1000);
+
+  // change to motion module
+  setModuleToDemo("action_module");
 
   if (handleFallen(stand_state_) == true || enable_ == false)
     return;
 
   // kick motion
+  int ball_position = ball_follower_.getBallPosition();
+  if(ball_position == BallFollower::NotFound || ball_position == BallFollower::OutOfRange)
+    return;
+
   switch (ball_position)
   {
   case robotis_op::BallFollower::OnRight:

@@ -61,6 +61,11 @@ class BallFollower
     return approach_ball_position_;
   }
 
+  bool isBallInRange()
+  {
+    return (approach_ball_position_ == OnRight || approach_ball_position_ == OnLeft);
+  }
+
  protected:
   const bool DEBUG_PRINT;
   const double CAMERA_HEIGHT;
