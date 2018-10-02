@@ -537,7 +537,11 @@ void SoccerDemo::handleKick()
   // kick motion
   int ball_position = ball_follower_.getBallPosition();
   if(ball_position == BallFollower::NotFound || ball_position == BallFollower::OutOfRange)
+  {
+    on_following_ball_ = false;
+    restart_soccer_ = true;
     return;
+  }
 
   switch (ball_position)
   {

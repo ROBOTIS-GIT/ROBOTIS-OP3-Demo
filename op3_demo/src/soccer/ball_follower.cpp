@@ -91,7 +91,7 @@ void BallFollower::startFollowing()
 void BallFollower::stopFollowing()
 {
   on_tracking_ = false;
-  approach_ball_position_ = NotFound;
+//  approach_ball_position_ = NotFound;
   count_to_kick_ = 0;
   accum_ball_position_ = 0;
   ROS_INFO("Stop Ball following");
@@ -192,7 +192,7 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
   ROS_INFO_STREAM_COND(DEBUG_PRINT,
                        "== Head Tilt : " << (current_tilt_ * 180 / M_PI) << " | Ball Y : " << (y_angle * 180 / M_PI));
 
-  approach_ball_position_ = NotFound;
+  approach_ball_position_ = OutOfRange;
 
   double distance_to_ball = CAMERA_HEIGHT * tan(M_PI * 0.5 + current_tilt_ - hip_pitch_offset_ - ball_size);
 
