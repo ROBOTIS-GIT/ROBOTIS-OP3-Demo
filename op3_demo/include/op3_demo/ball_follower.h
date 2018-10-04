@@ -55,6 +55,10 @@ class BallFollower
   void waitFollowing();
   void startFollowing();
   void stopFollowing();
+  void clearBallPosition()
+  {
+    approach_ball_position_ = NotFound;
+  }
 
   int getBallPosition()
   {
