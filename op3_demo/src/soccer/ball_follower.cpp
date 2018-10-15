@@ -60,7 +60,6 @@ BallFollower::BallFollower()
       "/robotis/walking/get_params");
 
   prev_time_ = ros::Time::now();
-
 }
 
 BallFollower::~BallFollower()
@@ -218,12 +217,21 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
 
     ROS_INFO("In range [%d | %d]", count_to_kick_, accum_ball_position_);
 
+    // ball queue
+    if(ball_position_queue_.size() >= 5)
+      ball_position_queue_.erase(ball_position_queue_.begin());
+
+    ball_position_queue_.push_back((ball_x_angle > 0) ? 1 : -1);
+
+
     if (count_to_kick_ > 20)
     {
       setWalkingCommand("stop");
       on_tracking_ = false;
 
       // check direction of the ball
+       accum_ball_position_ = std::accumulate(ball_position_queue_.begin(), ball_position_queue_.end(), 0);
+
       if (accum_ball_position_ > 0)
       {
         ROS_INFO_COND(DEBUG_PRINT, "Ready to kick : left");  // left
@@ -239,10 +247,10 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
     }
     else if (count_to_kick_ > 15)
     {
-      if (ball_x_angle > 0)
-        accum_ball_position_ += 1;
-      else
-        accum_ball_position_ -= 1;
+//      if (ball_x_angle > 0)
+//        accum_ball_position_ += 1;
+//      else
+//        accum_ball_position_ -= 1;
 
       // send message
       setWalkingParam(IN_PLACE_FB_STEP, 0, 0);

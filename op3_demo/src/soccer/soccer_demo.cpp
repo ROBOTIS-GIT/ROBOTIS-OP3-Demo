@@ -143,7 +143,7 @@ void SoccerDemo::process()
       }
 
       // check states for kick
-      int ball_position = ball_follower_.getBallPosition();
+//      int ball_position = ball_follower_.getBallPosition();
       bool in_range = ball_follower_.isBallInRange();
 
       if(in_range == true)
@@ -203,6 +203,8 @@ void SoccerDemo::callbackThread()
 
   is_running_client_ = nh.serviceClient<op3_action_module_msgs::IsRunning>("/robotis/action/is_running");
   set_joint_module_client_ = nh.serviceClient<robotis_controller_msgs::SetJointModule>("/robotis/set_present_joint_ctrl_modules");
+
+  test_pub_ = nh.advertise<std_msgs::String>("/debug_text", 0);
 
   while (nh.ok())
   {
@@ -514,6 +516,8 @@ void SoccerDemo::handleKick(int ball_position)
 
   on_following_ball_ = false;
   restart_soccer_ = true;
+  tracking_status_ = BallTracker::NotFound;
+  ball_follower_.clearBallPosition();
 
   usleep(2000 * 1000);
 
@@ -540,6 +544,8 @@ void SoccerDemo::handleKick()
   {
     on_following_ball_ = false;
     restart_soccer_ = true;
+    tracking_status_ = BallTracker::NotFound;
+    ball_follower_.clearBallPosition();
     return;
   }
 
@@ -547,11 +553,13 @@ void SoccerDemo::handleKick()
   {
   case robotis_op::BallFollower::OnRight:
     std::cout << "Kick Motion [R]: " << ball_position << std::endl;
+    sendDebugTopic("Kick the ball using Right foot");
     playMotion(is_grass_ ? RightKick + ForGrass : RightKick);
     break;
 
   case robotis_op::BallFollower::OnLeft:
     std::cout << "Kick Motion [L]: " << ball_position << std::endl;
+    sendDebugTopic("Kick the ball using Left foot");
     playMotion(is_grass_ ? LeftKick + ForGrass : LeftKick);
     break;
 
@@ -561,6 +569,8 @@ void SoccerDemo::handleKick()
 
   on_following_ball_ = false;
   restart_soccer_ = true;
+  tracking_status_ = BallTracker::NotFound;
+  ball_follower_.clearBallPosition();
 
   usleep(2000 * 1000);
 
@@ -651,6 +661,14 @@ bool SoccerDemo::isActionRunning()
   }
 
   return false;
+}
+
+void SoccerDemo::sendDebugTopic(const std::string &msgs)
+{
+  std_msgs::String debug_msg;
+  debug_msg.data = msgs;
+
+  test_pub_.publish(debug_msg);
 }
 
 }

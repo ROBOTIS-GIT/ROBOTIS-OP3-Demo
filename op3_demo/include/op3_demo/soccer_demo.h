@@ -98,6 +98,8 @@ class SoccerDemo : public OPDemo
   void setRGBLED(int blue, int green, int red);
   bool isActionRunning();
 
+  void sendDebugTopic(const std::string &msgs);
+
   BallTracker ball_tracker_;
   BallFollower ball_follower_;
 
@@ -107,6 +109,8 @@ class SoccerDemo : public OPDemo
   ros::Subscriber buttuon_sub_;
   ros::Subscriber demo_command_sub_;
   ros::Subscriber imu_data_sub_;
+
+  ros::Publisher test_pub_;
 
   ros::ServiceClient is_running_client_;
   ros::ServiceClient set_joint_module_client_;
