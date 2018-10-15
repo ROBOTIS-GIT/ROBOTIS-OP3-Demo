@@ -553,11 +553,13 @@ void SoccerDemo::handleKick()
   {
   case robotis_op::BallFollower::OnRight:
     std::cout << "Kick Motion [R]: " << ball_position << std::endl;
+    sendDebugTopic("Kick the ball using Right foot");
     playMotion(is_grass_ ? RightKick + ForGrass : RightKick);
     break;
 
   case robotis_op::BallFollower::OnLeft:
     std::cout << "Kick Motion [L]: " << ball_position << std::endl;
+    sendDebugTopic("Kick the ball using Left foot");
     playMotion(is_grass_ ? LeftKick + ForGrass : LeftKick);
     break;
 
