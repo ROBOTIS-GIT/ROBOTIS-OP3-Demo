@@ -53,6 +53,7 @@ class BallFollower
   ~BallFollower();
 
   bool processFollowing(double x_angle, double y_angle, double ball_size);
+  void decideBallPositin(double x_angle, double y_angle);
   void waitFollowing();
   void startFollowing();
   void stopFollowing();
