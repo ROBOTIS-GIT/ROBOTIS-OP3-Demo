@@ -539,6 +539,7 @@ void SoccerDemo::handleKick()
     return;
 
   // kick motion
+  ball_follower_.decideBallPositin(ball_tracker_.getPanOfBall(), ball_tracker_.getTiltOfBall());
   int ball_position = ball_follower_.getBallPosition();
   if(ball_position == BallFollower::NotFound || ball_position == BallFollower::OutOfRange)
   {
