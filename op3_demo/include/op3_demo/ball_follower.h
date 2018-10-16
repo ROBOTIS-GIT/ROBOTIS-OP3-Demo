@@ -121,8 +121,6 @@ class BallFollower
 
   int count_not_found_;
   int count_to_kick_;
-  int accum_ball_position_;
-  std::vector<int> ball_position_queue_;
   bool on_tracking_;
   int approach_ball_position_;
   double current_pan_, current_tilt_;

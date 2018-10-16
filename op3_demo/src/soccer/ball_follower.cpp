@@ -92,7 +92,7 @@ void BallFollower::stopFollowing()
   on_tracking_ = false;
   //  approach_ball_position_ = NotFound;
   count_to_kick_ = 0;
-  accum_ball_position_ = 0;
+//  accum_ball_position_ = 0;
   ROS_INFO("Stop Ball following");
 
   setWalkingCommand("stop");
@@ -172,7 +172,7 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
   prev_time_ = curr_time;
 
   count_not_found_ = 0;
-  int ball_position_sum = 0;
+//  int ball_position_sum = 0;
 
   // check of getting head joints angle
   if (current_tilt_ == -10 && current_pan_ == -10)
@@ -213,15 +213,15 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
                          "head pan : " << (current_pan_ * 180 / M_PI) << " | ball pan : " << (x_angle * 180 / M_PI));
     ROS_INFO_STREAM_COND(DEBUG_PRINT,
                          "head tilt : " << (current_tilt_ * 180 / M_PI) << " | ball tilt : " << (y_angle * 180 / M_PI));
-    ROS_INFO_STREAM_COND(DEBUG_PRINT, "foot to kick : " << accum_ball_position_);
+    ROS_INFO_STREAM_COND(DEBUG_PRINT, "foot to kick : " << ball_x_angle);
 
-    ROS_INFO("In range [%d | %d]", count_to_kick_, accum_ball_position_);
+    ROS_INFO("In range [%d | %d]", count_to_kick_, ball_x_angle);
 
     // ball queue
-    if(ball_position_queue_.size() >= 5)
-      ball_position_queue_.erase(ball_position_queue_.begin());
+//    if(ball_position_queue_.size() >= 5)
+//      ball_position_queue_.erase(ball_position_queue_.begin());
 
-    ball_position_queue_.push_back((ball_x_angle > 0) ? 1 : -1);
+//    ball_position_queue_.push_back((ball_x_angle > 0) ? 1 : -1);
 
 
     if (count_to_kick_ > 20)
@@ -230,9 +230,10 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
       on_tracking_ = false;
 
       // check direction of the ball
-      accum_ball_position_ = std::accumulate(ball_position_queue_.begin(), ball_position_queue_.end(), 0);
+//      accum_ball_position_ = std::accumulate(ball_position_queue_.begin(), ball_position_queue_.end(), 0);
 
-      if (accum_ball_position_ > 0)
+//      if (accum_ball_position_ > 0)
+      if (ball_x_angle > 0)
       {
         ROS_INFO_COND(DEBUG_PRINT, "Ready to kick : left");  // left
         approach_ball_position_ = OnLeft;
@@ -261,7 +262,7 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
   else
   {
     count_to_kick_ = 0;
-    accum_ball_position_ = 0;
+//    accum_ball_position_ = NotFound;
   }
 
   double fb_move = 0.0, rl_angle = 0.0;
@@ -283,6 +284,7 @@ void BallFollower::decideBallPositin(double x_angle, double y_angle)
   // check of getting head joints angle
   if (current_tilt_ == -10 && current_pan_ == -10)
   {
+    approach_ball_position_ = NotFound;
     return;
   }
 
