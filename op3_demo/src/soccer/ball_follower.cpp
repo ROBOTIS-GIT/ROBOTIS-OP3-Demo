@@ -22,34 +22,34 @@ namespace robotis_op
 {
 
 BallFollower::BallFollower()
-    : nh_(ros::this_node::getName()),
-      FOV_WIDTH(35.2 * M_PI / 180),
-      FOV_HEIGHT(21.6 * M_PI / 180),
-      count_not_found_(0),
-      count_to_kick_(0),
-      on_tracking_(false),
-      approach_ball_position_(NotFound),
-      kick_motion_index_(83),
-      CAMERA_HEIGHT(0.46),
-      NOT_FOUND_THRESHOLD(50),
-      MAX_FB_STEP(40.0 * 0.001),
-      MAX_RL_TURN(15.0 * M_PI / 180),
-      IN_PLACE_FB_STEP(-3.0 * 0.001),
-      MIN_FB_STEP(5.0 * 0.001),
-      MIN_RL_TURN(5.0 * M_PI / 180),
-      UNIT_FB_STEP(1.0 * 0.001),
-      UNIT_RL_TURN(0.5 * M_PI / 180),
-      SPOT_FB_OFFSET(0.0 * 0.001),
-      SPOT_RL_OFFSET(0.0 * 0.001),
-      SPOT_ANGLE_OFFSET(0.0),
-      hip_pitch_offset_(7.0),
-      current_pan_(-10),
-      current_tilt_(-10),
-      current_x_move_(0.005),
-      current_r_angle_(0),
-      curr_period_time_(0.6),
-      accum_period_time_(0.0),
-      DEBUG_PRINT(false)
+  : nh_(ros::this_node::getName()),
+    FOV_WIDTH(35.2 * M_PI / 180),
+    FOV_HEIGHT(21.6 * M_PI / 180),
+    count_not_found_(0),
+    count_to_kick_(0),
+    on_tracking_(false),
+    approach_ball_position_(NotFound),
+    kick_motion_index_(83),
+    CAMERA_HEIGHT(0.46),
+    NOT_FOUND_THRESHOLD(50),
+    MAX_FB_STEP(40.0 * 0.001),
+    MAX_RL_TURN(15.0 * M_PI / 180),
+    IN_PLACE_FB_STEP(-3.0 * 0.001),
+    MIN_FB_STEP(5.0 * 0.001),
+    MIN_RL_TURN(5.0 * M_PI / 180),
+    UNIT_FB_STEP(1.0 * 0.001),
+    UNIT_RL_TURN(0.5 * M_PI / 180),
+    SPOT_FB_OFFSET(0.0 * 0.001),
+    SPOT_RL_OFFSET(0.0 * 0.001),
+    SPOT_ANGLE_OFFSET(0.0),
+    hip_pitch_offset_(7.0),
+    current_pan_(-10),
+    current_tilt_(-10),
+    current_x_move_(0.005),
+    current_r_angle_(0),
+    curr_period_time_(0.6),
+    accum_period_time_(0.0),
+    DEBUG_PRINT(false)
 {
   current_joint_states_sub_ = nh_.subscribe("/robotis/goal_joint_states", 10, &BallFollower::currentJointStatesCallback,
                                             this);
@@ -57,10 +57,9 @@ BallFollower::BallFollower()
   set_walking_command_pub_ = nh_.advertise<std_msgs::String>("/robotis/walking/command", 0);
   set_walking_param_pub_ = nh_.advertise<op3_walking_module_msgs::WalkingParam>("/robotis/walking/set_params", 0);
   get_walking_param_client_ = nh_.serviceClient<op3_walking_module_msgs::GetWalkingParam>(
-      "/robotis/walking/get_params");
+        "/robotis/walking/get_params");
 
   prev_time_ = ros::Time::now();
-
 }
 
 BallFollower::~BallFollower()
@@ -91,9 +90,9 @@ void BallFollower::startFollowing()
 void BallFollower::stopFollowing()
 {
   on_tracking_ = false;
-  approach_ball_position_ = NotFound;
+  //  approach_ball_position_ = NotFound;
   count_to_kick_ = 0;
-  accum_ball_position_ = 0;
+//  accum_ball_position_ = 0;
   ROS_INFO("Stop Ball following");
 
   setWalkingCommand("stop");
@@ -173,7 +172,7 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
   prev_time_ = curr_time;
 
   count_not_found_ = 0;
-  int ball_position_sum = 0;
+//  int ball_position_sum = 0;
 
   // check of getting head joints angle
   if (current_tilt_ == -10 && current_pan_ == -10)
@@ -192,7 +191,7 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
   ROS_INFO_STREAM_COND(DEBUG_PRINT,
                        "== Head Tilt : " << (current_tilt_ * 180 / M_PI) << " | Ball Y : " << (y_angle * 180 / M_PI));
 
-  approach_ball_position_ = NotFound;
+  approach_ball_position_ = OutOfRange;
 
   double distance_to_ball = CAMERA_HEIGHT * tan(M_PI * 0.5 + current_tilt_ - hip_pitch_offset_ - ball_size);
 
@@ -214,9 +213,16 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
                          "head pan : " << (current_pan_ * 180 / M_PI) << " | ball pan : " << (x_angle * 180 / M_PI));
     ROS_INFO_STREAM_COND(DEBUG_PRINT,
                          "head tilt : " << (current_tilt_ * 180 / M_PI) << " | ball tilt : " << (y_angle * 180 / M_PI));
-    ROS_INFO_STREAM_COND(DEBUG_PRINT, "foot to kick : " << accum_ball_position_);
+    ROS_INFO_STREAM_COND(DEBUG_PRINT, "foot to kick : " << ball_x_angle);
 
-    ROS_INFO("In range [%d | %d]", count_to_kick_, accum_ball_position_);
+    ROS_INFO("In range [%d | %d]", count_to_kick_, ball_x_angle);
+
+    // ball queue
+//    if(ball_position_queue_.size() >= 5)
+//      ball_position_queue_.erase(ball_position_queue_.begin());
+
+//    ball_position_queue_.push_back((ball_x_angle > 0) ? 1 : -1);
+
 
     if (count_to_kick_ > 20)
     {
@@ -224,7 +230,10 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
       on_tracking_ = false;
 
       // check direction of the ball
-      if (accum_ball_position_ > 0)
+//      accum_ball_position_ = std::accumulate(ball_position_queue_.begin(), ball_position_queue_.end(), 0);
+
+//      if (accum_ball_position_ > 0)
+      if (ball_x_angle > 0)
       {
         ROS_INFO_COND(DEBUG_PRINT, "Ready to kick : left");  // left
         approach_ball_position_ = OnLeft;
@@ -239,10 +248,10 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
     }
     else if (count_to_kick_ > 15)
     {
-      if (ball_x_angle > 0)
-        accum_ball_position_ += 1;
-      else
-        accum_ball_position_ -= 1;
+      //      if (ball_x_angle > 0)
+      //        accum_ball_position_ += 1;
+      //      else
+      //        accum_ball_position_ -= 1;
 
       // send message
       setWalkingParam(IN_PLACE_FB_STEP, 0, 0);
@@ -253,7 +262,7 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
   else
   {
     count_to_kick_ = 0;
-    accum_ball_position_ = 0;
+//    accum_ball_position_ = NotFound;
   }
 
   double fb_move = 0.0, rl_angle = 0.0;
@@ -268,6 +277,23 @@ bool BallFollower::processFollowing(double x_angle, double y_angle, double ball_
   //ROS_INFO("distance to ball : %6.4f, fb : %6.4f, delta : %6.6f", distance_to_ball, fb_move, delta_time);
 
   return false;
+}
+
+void BallFollower::decideBallPositin(double x_angle, double y_angle)
+{
+  // check of getting head joints angle
+  if (current_tilt_ == -10 && current_pan_ == -10)
+  {
+    approach_ball_position_ = NotFound;
+    return;
+  }
+
+  double ball_x_angle = current_pan_ + x_angle;
+
+  if (ball_x_angle > 0)
+    approach_ball_position_ = OnLeft;
+  else
+    approach_ball_position_ = OnRight;
 }
 
 void BallFollower::waitFollowing()
