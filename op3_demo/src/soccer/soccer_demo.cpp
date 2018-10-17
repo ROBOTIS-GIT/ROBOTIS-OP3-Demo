@@ -143,11 +143,13 @@ void SoccerDemo::process()
       }
 
       // check states for kick
-      int ball_position = ball_follower_.getBallPosition();
-      if (ball_position != robotis_op::BallFollower::NotFound)
+//      int ball_position = ball_follower_.getBallPosition();
+      bool in_range = ball_follower_.isBallInRange();
+
+      if(in_range == true)
       {
         ball_follower_.stopFollowing();
-        handleKick(ball_position);
+        handleKick();
       }
       break;
     }
@@ -201,6 +203,8 @@ void SoccerDemo::callbackThread()
 
   is_running_client_ = nh.serviceClient<op3_action_module_msgs::IsRunning>("/robotis/action/is_running");
   set_joint_module_client_ = nh.serviceClient<robotis_controller_msgs::SetJointModule>("/robotis/set_present_joint_ctrl_modules");
+
+  test_pub_ = nh.advertise<std_msgs::String>("/debug_text", 0);
 
   while (nh.ok())
   {
@@ -490,8 +494,6 @@ void SoccerDemo::handleKick(int ball_position)
   // change to motion module
   setModuleToDemo("action_module");
 
-  //usleep(1500 * 1000);
-
   if (handleFallen(stand_state_) == true || enable_ == false)
     return;
 
@@ -514,6 +516,62 @@ void SoccerDemo::handleKick(int ball_position)
 
   on_following_ball_ = false;
   restart_soccer_ = true;
+  tracking_status_ = BallTracker::NotFound;
+  ball_follower_.clearBallPosition();
+
+  usleep(2000 * 1000);
+
+  if (handleFallen(stand_state_) == true)
+    return;
+
+  // ceremony
+  //playMotion(Ceremony);
+}
+
+void SoccerDemo::handleKick()
+{
+  usleep(1500 * 1000);
+
+  // change to motion module
+  setModuleToDemo("action_module");
+
+  if (handleFallen(stand_state_) == true || enable_ == false)
+    return;
+
+  // kick motion
+  ball_follower_.decideBallPositin(ball_tracker_.getPanOfBall(), ball_tracker_.getTiltOfBall());
+  int ball_position = ball_follower_.getBallPosition();
+  if(ball_position == BallFollower::NotFound || ball_position == BallFollower::OutOfRange)
+  {
+    on_following_ball_ = false;
+    restart_soccer_ = true;
+    tracking_status_ = BallTracker::NotFound;
+    ball_follower_.clearBallPosition();
+    return;
+  }
+
+  switch (ball_position)
+  {
+  case robotis_op::BallFollower::OnRight:
+    std::cout << "Kick Motion [R]: " << ball_position << std::endl;
+    sendDebugTopic("Kick the ball using Right foot");
+    playMotion(is_grass_ ? RightKick + ForGrass : RightKick);
+    break;
+
+  case robotis_op::BallFollower::OnLeft:
+    std::cout << "Kick Motion [L]: " << ball_position << std::endl;
+    sendDebugTopic("Kick the ball using Left foot");
+    playMotion(is_grass_ ? LeftKick + ForGrass : LeftKick);
+    break;
+
+  default:
+    break;
+  }
+
+  on_following_ball_ = false;
+  restart_soccer_ = true;
+  tracking_status_ = BallTracker::NotFound;
+  ball_follower_.clearBallPosition();
 
   usleep(2000 * 1000);
 
@@ -604,6 +662,14 @@ bool SoccerDemo::isActionRunning()
   }
 
   return false;
+}
+
+void SoccerDemo::sendDebugTopic(const std::string &msgs)
+{
+  std_msgs::String debug_msg;
+  debug_msg.data = msgs;
+
+  test_pub_.publish(debug_msg);
 }
 
 }

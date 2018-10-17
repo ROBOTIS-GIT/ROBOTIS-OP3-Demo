@@ -20,6 +20,7 @@
 #define BALL_FOLLOWER_H_
 
 #include <math.h>
+#include <numeric>
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <std_msgs/String.h>
@@ -52,13 +53,23 @@ class BallFollower
   ~BallFollower();
 
   bool processFollowing(double x_angle, double y_angle, double ball_size);
+  void decideBallPositin(double x_angle, double y_angle);
   void waitFollowing();
   void startFollowing();
   void stopFollowing();
+  void clearBallPosition()
+  {
+    approach_ball_position_ = NotFound;
+  }
 
   int getBallPosition()
   {
     return approach_ball_position_;
+  }
+
+  bool isBallInRange()
+  {
+    return (approach_ball_position_ == OnRight || approach_ball_position_ == OnLeft);
   }
 
  protected:
@@ -95,7 +106,7 @@ class BallFollower
   ros::Publisher head_scan_pub_;
   ros::Publisher set_walking_command_pub_;
   ros::Publisher set_walking_param_pub_;
-  ;
+
   ros::Publisher motion_index_pub_;
   ros::ServiceClient get_walking_param_client_;
 
@@ -110,7 +121,6 @@ class BallFollower
 
   int count_not_found_;
   int count_to_kick_;
-  int accum_ball_position_;
   bool on_tracking_;
   int approach_ball_position_;
   double current_pan_, current_tilt_;
