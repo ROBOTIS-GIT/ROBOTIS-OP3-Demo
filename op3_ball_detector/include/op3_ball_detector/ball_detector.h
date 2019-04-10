@@ -43,6 +43,8 @@
 #include "op3_ball_detector/GetParameters.h"
 #include "op3_ball_detector/SetParameters.h"
 
+#include "op3_ball_detector/SaveImage.h"
+
 namespace robotis_op
 {
 
@@ -79,6 +81,9 @@ class BallDetector
   void paramCommandCallback(const std_msgs::String::ConstPtr &msg);
   bool setParamCallback(op3_ball_detector::SetParameters::Request &req, op3_ball_detector::SetParameters::Response &res);
   bool getParamCallback(op3_ball_detector::GetParameters::Request &req, op3_ball_detector::GetParameters::Response &res);
+  
+  bool saveImageCallback(op3_ball_detector::SaveImage::Request &req, op3_ball_detector::SaveImage::Response &res);
+
   void resetParameter();
   void publishParam();
 
