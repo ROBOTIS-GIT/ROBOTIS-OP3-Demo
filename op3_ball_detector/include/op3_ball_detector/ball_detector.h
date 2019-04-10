@@ -81,7 +81,7 @@ class BallDetector
   void paramCommandCallback(const std_msgs::String::ConstPtr &msg);
   bool setParamCallback(op3_ball_detector::SetParameters::Request &req, op3_ball_detector::SetParameters::Response &res);
   bool getParamCallback(op3_ball_detector::GetParameters::Request &req, op3_ball_detector::GetParameters::Response &res);
-  
+
   bool saveImageCallback(op3_ball_detector::SaveImage::Request &req, op3_ball_detector::SaveImage::Response &res);
 
   void resetParameter();
@@ -138,6 +138,7 @@ class BallDetector
   ros::Subscriber param_command_sub_;
   ros::ServiceServer get_param_client_;
   ros::ServiceServer set_param_client_;
+  ros::ServiceServer save_image_client_;
 
   //flag indicating a new image has been received
   bool new_image_flag_;
