@@ -348,6 +348,7 @@ bool BallDetector::saveImageCallback(op3_ball_detector::SaveImage::Request &req,
 {
   // Basic debug statement to start
   ROS_DEBUG("Hello, your number is %d", req.params.test);
+  res.returns.test = 5;
   return true;
 }
 
