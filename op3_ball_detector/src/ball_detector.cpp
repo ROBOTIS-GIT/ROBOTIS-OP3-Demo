@@ -350,7 +350,7 @@ bool BallDetector::saveImageCallback(op3_ball_detector::SaveImage::Request &req,
   ROS_DEBUG("Hello, your number is %d", req.params.test);
 
   if (cv_img_ptr_sub_ != NULL) {
-    cv::imwrite("~/out.png", cv_img_ptr_sub_->image);
+    cv::imwrite("/home/robotis/out.png", cv_img_ptr_sub_->image);
     res.returns.test = 0;
   }
   else {
