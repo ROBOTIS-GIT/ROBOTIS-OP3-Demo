@@ -346,15 +346,15 @@ bool BallDetector:: getParamCallback(op3_ball_detector::GetParameters::Request &
 // Callback for image saving
 bool BallDetector::saveImageCallback(op3_ball_detector::SaveImage::Request &req, op3_ball_detector::SaveImage::Response &res)
 {
-  // Basic debug statement to start
-  ROS_DEBUG("Hello, your number is %d", req.params.test);
-
+  std::string filename = "/home/robotis/" + req.params.name + ".png";
   if (cv_img_ptr_sub_ != NULL) {
-    cv::imwrite("/home/robotis/out.png", cv_img_ptr_sub_->image);
-    res.returns.test = 0;
+    if (cv::imwrite(filename, cv_img_ptr_sub_->image) == false) {
+      res.returns.name = "Failed for some reason";
+    }
+    res.returns.name = "Saved";
   }
   else {
-    res.returns.test = 1;
+    res.returns.name = "Not Saved";
   }
 
   return true;

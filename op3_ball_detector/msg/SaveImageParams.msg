@@ -1,2 +1,2 @@
 # Test
-uint32 test
+string name
