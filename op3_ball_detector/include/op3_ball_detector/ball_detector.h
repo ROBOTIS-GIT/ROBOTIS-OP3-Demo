@@ -45,6 +45,7 @@
 #include "op3_ball_detector/SetParameters.h"
 
 #include "op3_ball_detector/SaveImage.h"
+#include "op3_ball_detector/SwitchDetection.h"
 
 namespace robotis_op
 {
@@ -84,6 +85,7 @@ class BallDetector
   bool getParamCallback(op3_ball_detector::GetParameters::Request &req, op3_ball_detector::GetParameters::Response &res);
 
   bool saveImageCallback(op3_ball_detector::SaveImage::Request &req, op3_ball_detector::SaveImage::Response &res);
+  bool switchDetectionCallback(op3_ball_detector::SwitchDetection::Request &req, op3_ball_detector::SwitchDetection::Response &res);
 
   void resetParameter();
   void publishParam();
