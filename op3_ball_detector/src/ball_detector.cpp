@@ -29,7 +29,8 @@ BallDetector::BallDetector()
     enable_(true),
     params_config_(),
     init_param_(false),
-    not_found_count_(0)
+    not_found_count_(0),
+    switch_detection_flag_(false)
 {
   has_path_ = nh_.getParam("yaml_path", param_path_);
 
@@ -363,8 +364,25 @@ bool BallDetector::saveImageCallback(op3_ball_detector::SaveImage::Request &req,
 
 bool BallDetector::switchDetectionCallback(op3_ball_detector::SwitchDetection::Request &req, op3_ball_detector::SwitchDetection::Response &res)
 {
-  // STUB
+  // Not set, turn on improved detection
+  if (switch_detection_flag_ == false)
+  {
+    switch_detection_flag_ = true;
+    loadDetectionSettings();
+    res.returns = "Improved detection loaded.";
+  }
+  else // otherwise, turn it off
+  {
+    switch_detection_flag_ = false;
+    // define unloading
+    res.returns = "Improved detection unloaded.";
+  }
   return true;
+}
+
+bool BallDetector::loadDetectionSettings()
+{
+  // STUB
 }
 
 void BallDetector::resetParameter()

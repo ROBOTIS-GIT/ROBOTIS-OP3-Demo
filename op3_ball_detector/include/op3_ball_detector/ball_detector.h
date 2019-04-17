@@ -87,8 +87,11 @@ class BallDetector
   bool saveImageCallback(op3_ball_detector::SaveImage::Request &req, op3_ball_detector::SaveImage::Response &res);
   bool switchDetectionCallback(op3_ball_detector::SwitchDetection::Request &req, op3_ball_detector::SwitchDetection::Response &res);
 
+  bool loadDetectionSettings();
+
   void resetParameter();
   void publishParam();
+
 
   void printConfig();
   void saveConfig();
@@ -168,6 +171,10 @@ class BallDetector
 
   dynamic_reconfigure::Server<op3_ball_detector::DetectorParamsConfig> param_server_;
   dynamic_reconfigure::Server<op3_ball_detector::DetectorParamsConfig>::CallbackType callback_fnc_;
+
+  // Flag for indicating modified detection mode
+  bool switch_detection_flag_;
+  // once structure is finalized set pointer to structure here
 };
 
 }       // namespace robotis_op
