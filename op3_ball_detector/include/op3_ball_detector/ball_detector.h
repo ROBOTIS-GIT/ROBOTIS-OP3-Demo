@@ -142,6 +142,7 @@ class BallDetector
   ros::ServiceServer get_param_client_;
   ros::ServiceServer set_param_client_;
   ros::ServiceServer save_image_client_;
+  ros::ServiceServer switch_detection_client_;
 
   //flag indicating a new image has been received
   bool new_image_flag_;
