@@ -351,7 +351,9 @@ bool BallDetector::saveImageCallback(op3_ball_detector::SaveImage::Request &req,
     if (cv::imwrite(filename, cv_img_ptr_sub_->image) == false) {
       res.returns.name = "Failed for some reason";
     }
-    res.returns.name = "Saved";
+    else {
+      res.returns.name = "Saved";
+    }
   }
   else {
     res.returns.name = "Not Saved";
