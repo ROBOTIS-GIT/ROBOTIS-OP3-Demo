@@ -91,6 +91,7 @@ BallDetector::BallDetector()
   param_command_sub_ = nh_.subscribe("param_command", 1, &BallDetector::paramCommandCallback, this);
   set_param_client_ = nh_.advertiseService("set_param", &BallDetector::setParamCallback, this);
   get_param_client_ = nh_.advertiseService("get_param", &BallDetector::getParamCallback, this);
+  save_image_client_ = nh_.advertiseService("save_image", &BallDetector::saveImageCallback, this);
   default_setting_path_ = ros::package::getPath(ROS_PACKAGE_NAME) + "/config/ball_detector_params_default.yaml";
 
   //sets config and prints it
@@ -338,6 +339,25 @@ bool BallDetector:: getParamCallback(op3_ball_detector::GetParameters::Request &
   res.returns.filter_v_min = params_config_.filter_threshold.v_min;
   res.returns.filter_v_max = params_config_.filter_threshold.v_max;
   res.returns.ellipse_size = params_config_.ellipse_size;
+
+  return true;
+}
+
+// Callback for image saving
+bool BallDetector::saveImageCallback(op3_ball_detector::SaveImage::Request &req, op3_ball_detector::SaveImage::Response &res)
+{
+  std::string filename = "/home/robotis/" + req.params.name + ".png";
+  if (cv_img_ptr_sub_ != NULL) {
+    if (cv::imwrite(filename, cv_img_ptr_sub_->image) == false) {
+      res.returns.name = "Failed for some reason";
+    }
+    else {
+      res.returns.name = "Saved";
+    }
+  }
+  else {
+    res.returns.name = "Not Saved";
+  }
 
   return true;
 }
