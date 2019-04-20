@@ -132,6 +132,11 @@ void BallDetector::process()
     // set input image
     setInputImage(cv_img_ptr_sub_->image, img_hsv);
 
+    if (switch_detection_flag_ == true)
+    {
+      applyDetectionSettings();
+    }
+
     // image filtering
     filterImage(img_hsv, img_filtered);
 
@@ -381,6 +386,11 @@ bool BallDetector::switchDetectionCallback(op3_ball_detector::SwitchDetection::R
 }
 
 bool BallDetector::loadDetectionSettings()
+{
+  // STUB
+}
+
+void BallDetector::applyDetectionSettings()
 {
   // STUB
 }

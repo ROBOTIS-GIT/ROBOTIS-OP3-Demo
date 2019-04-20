@@ -88,6 +88,7 @@ class BallDetector
   bool switchDetectionCallback(op3_ball_detector::SwitchDetection::Request &req, op3_ball_detector::SwitchDetection::Response &res);
 
   bool loadDetectionSettings();
+  void applyDetectionSettings(); // types TBD
 
   void resetParameter();
   void publishParam();
