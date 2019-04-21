@@ -32,16 +32,16 @@ BallDetector::BallDetector()
     not_found_count_(0)
 {
   has_path_ = nh_.getParam("yaml_path", param_path_);
-  has_test_ = nh_.getParam("test_thing", test_param_);
+  has_color_config_ = nh_.getParam("color_path", color_config_path_);
 
   if (has_path_)
     std::cout << "Path : " << param_path_ << std::endl;
-  if(has_test_)
-    std::cout << "Test : " << test_param_ << std::endl;
+  if(has_color_config_)
+    std::cout << "Color config path : " << color_config_path_ << std::endl;
 
   //detector config struct
   DetectorConfig detect_config;
-  TestConfig test_config;
+  BallColorConfig color_config;
 
   //get user parameters from dynamic reconfigure (yaml entries)
   nh_.param<int>("gaussian_blur_size", detect_config.gaussian_blur_size, params_config_.gaussian_blur_size);
@@ -73,8 +73,8 @@ BallDetector::BallDetector()
   nh_.param<int>("ellipse_size", detect_config.ellipse_size, params_config_.ellipse_size);
   nh_.param<bool>("filter_debug", detect_config.debug, params_config_.debug);
 
-  //Test
-  nh_.param<int>("test_val", test_config.test_val, params_test_.test_val);
+  nh_.param<std::string>("name", color_config.name, params_color_.name);
+  nh_.param<int>("test_val", color_config.test_val, params_color_.test_val);
 
   //sets publishers
   image_pub_ = it_.advertise("image_out", 100);
@@ -103,7 +103,7 @@ BallDetector::BallDetector()
 
   //sets config and prints it
   params_config_ = detect_config;
-  params_test_ = test_config;
+  params_color_ = color_config;
   init_param_ = true;
   printConfig();
 }
@@ -473,8 +473,9 @@ void BallDetector::printConfig()
             << params_config_.ellipse_size << std::endl << "    filter_image_to_debug: " << params_config_.debug
             << std::endl << std::endl;
 
-  std::cout << "Test Configuration:" << std::endl << "    test_val: "
-            << params_test_.test_val << std::endl;
+  std::cout << "Test Configuration:" << std::endl << "    name: "
+            << params_color_.name << std::endl << "    test_val: "
+            << params_color_.test_val << std::endl;
 }
 
 void BallDetector::saveConfig()

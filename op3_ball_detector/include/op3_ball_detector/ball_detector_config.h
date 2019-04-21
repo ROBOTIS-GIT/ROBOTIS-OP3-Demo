@@ -101,9 +101,10 @@ class DetectorConfig
   }
 };
 
-class TestConfig
+class BallColorConfig
 {
  public:
+  std::string name;
   int test_val; 
 };
 

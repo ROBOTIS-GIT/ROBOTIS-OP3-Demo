@@ -133,10 +133,10 @@ class BallDetector
   std::string param_path_;
   bool has_path_;
 
-  //Test things
-  TestConfig params_test_;
-  std::string test_param_;
-  bool has_test_;
+  //Color configure
+  BallColorConfig params_color_;
+  std::string color_config_path_;
+  bool has_color_config_;
 
   // web setting
   std::string default_setting_path_;
