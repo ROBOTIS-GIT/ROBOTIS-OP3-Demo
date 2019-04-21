@@ -101,5 +101,11 @@ class DetectorConfig
   }
 };
 
+class TestConfig
+{
+ public:
+  int test_val; 
+};
+
 }
 #endif  // _DETECTOR_CONFIG_H_

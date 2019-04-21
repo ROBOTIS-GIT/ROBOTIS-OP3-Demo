@@ -32,12 +32,16 @@ BallDetector::BallDetector()
     not_found_count_(0)
 {
   has_path_ = nh_.getParam("yaml_path", param_path_);
+  has_test_ = nh_.getParam("test_thing", test_param_);
 
   if (has_path_)
     std::cout << "Path : " << param_path_ << std::endl;
+  if(has_test_)
+    std::cout << "Test : " << test_param_ << std::endl;
 
   //detector config struct
   DetectorConfig detect_config;
+  TestConfig test_config;
 
   //get user parameters from dynamic reconfigure (yaml entries)
   nh_.param<int>("gaussian_blur_size", detect_config.gaussian_blur_size, params_config_.gaussian_blur_size);
@@ -69,6 +73,12 @@ BallDetector::BallDetector()
   nh_.param<int>("ellipse_size", detect_config.ellipse_size, params_config_.ellipse_size);
   nh_.param<bool>("filter_debug", detect_config.debug, params_config_.debug);
 
+  //Test
+  nh_.param<int>("test_val", test_config.test_val, params_test_.test_val);
+
+  std::cout << "\nCHANGED 0" << params_config_.gaussian_blur_size << std::endl << std::endl;
+  std::cout << "\nWUT: " << test_config.test_val << std::endl << std::endl;
+
   //sets publishers
   image_pub_ = it_.advertise("image_out", 100);
   circles_pub_ = nh_.advertise<op3_ball_detector::CircleSetStamped>("circle_set", 100);
@@ -96,6 +106,7 @@ BallDetector::BallDetector()
 
   //sets config and prints it
   params_config_ = detect_config;
+  params_test_ = test_config;
   init_param_ = true;
   printConfig();
 }
@@ -266,6 +277,8 @@ void BallDetector::dynParamCallback(op3_ball_detector::DetectorParamsConfig &con
   if (params_config_.gaussian_blur_size <= 0)
     params_config_.gaussian_blur_size = 1;
 
+  std::cout << "\nCHANGED 1: " << params_config_.gaussian_blur_size << std::endl << std::endl;
+
   printConfig();
   saveConfig();
 }
@@ -314,6 +327,8 @@ bool BallDetector::setParamCallback(op3_ball_detector::SetParameters::Request &r
   params_config_.filter_threshold.v_min = req.params.filter_v_min;
   params_config_.filter_threshold.v_max = req.params.filter_v_max;
   params_config_.ellipse_size = req.params.ellipse_size;
+
+  std::cout << "\nCHANGED 2: " << params_config_.gaussian_blur_size << std::endl << std::endl;
 
   saveConfig();
 
@@ -403,6 +418,8 @@ void BallDetector::resetParameter()
     if (params_config_.gaussian_blur_size <= 0)
       params_config_.gaussian_blur_size = 1;
 
+  std::cout << "\nCHANGED 3: " << params_config_.gaussian_blur_size << std::endl << std::endl;
+
     printConfig();
     saveConfig();
 
@@ -464,6 +481,9 @@ void BallDetector::printConfig()
             << params_config_.filter2_threshold.v_max << std::endl << "    ellipse_size: "
             << params_config_.ellipse_size << std::endl << "    filter_image_to_debug: " << params_config_.debug
             << std::endl << std::endl;
+
+  std::cout << "Test Configuration:" << std::endl << "    test_val: "
+            << params_test_.test_val << std::endl;
 }
 
 void BallDetector::saveConfig()

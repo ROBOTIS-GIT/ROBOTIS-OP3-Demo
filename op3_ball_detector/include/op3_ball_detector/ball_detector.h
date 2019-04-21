@@ -133,6 +133,11 @@ class BallDetector
   std::string param_path_;
   bool has_path_;
 
+  //Test things
+  TestConfig params_test_;
+  std::string test_param_;
+  bool has_test_;
+
   // web setting
   std::string default_setting_path_;
   ros::Publisher param_pub_;
