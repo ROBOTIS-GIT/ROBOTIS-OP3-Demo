@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="config_path" default="$(find op3_ball_detector)/config/ball_detector_params.yaml"/>
-  <arg name="test_path" default="$(find op3_ball_detector)/config/test.yaml"/>
+  <arg name="test_path" default="$(find op3_ball_detector)/config/red_ball_config.yaml"/>
     
   <!-- ball detector -->
   <node pkg="op3_ball_detector" type="ball_detector_node" name="ball_detector_node" args="" output="screen">
