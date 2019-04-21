@@ -42,7 +42,6 @@ BallDetector::BallDetector()
 
   //detector config struct
   DetectorConfig detect_config;
-  // BallColorConfig color_config;
 
   //get user parameters from dynamic reconfigure (yaml entries)
   nh_.param<int>("gaussian_blur_size", detect_config.gaussian_blur_size, params_config_.gaussian_blur_size);
@@ -111,7 +110,6 @@ BallDetector::BallDetector()
 
   //sets config and prints it
   params_config_ = detect_config;
-  // params_color_ = color_config;
   init_param_ = true;
   printConfig();
   process();
@@ -149,6 +147,9 @@ void BallDetector::process()
     std::cout << "\n\nIN PROCESS\n";
     printConfig();
   }
+
+  applyDetectionSettings();
+  printConfig();
 
   if (cv_img_ptr_sub_ != NULL)
   {
@@ -428,7 +429,9 @@ bool BallDetector::loadDetectionSettings()
 
 void BallDetector::applyDetectionSettings()
 {
-  // STUB
+  if(!has_color_config_)
+    return;
+  params_config_.filter_threshold.h_min = params_color_.test_val;
 }
 
 void BallDetector::resetParameter()
