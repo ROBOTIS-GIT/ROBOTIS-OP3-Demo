@@ -93,7 +93,7 @@ BallDetector::BallDetector()
   set_param_client_ = nh_.advertiseService("set_param", &BallDetector::setParamCallback, this);
   get_param_client_ = nh_.advertiseService("get_param", &BallDetector::getParamCallback, this);
   save_image_client_ = nh_.advertiseService("save_image", &BallDetector::saveImageCallback, this);
-  switch_detection_client_ = nh_.advertiseService("switch_detecton", &BallDetector::switchDetectionCallback, this);
+  switch_detection_client_ = nh_.advertiseService("switch_detection", &BallDetector::switchDetectionCallback, this);
   default_setting_path_ = ros::package::getPath(ROS_PACKAGE_NAME) + "/config/ball_detector_params_default.yaml";
 
   //sets config and prints it
