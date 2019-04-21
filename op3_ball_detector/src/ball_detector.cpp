@@ -42,7 +42,7 @@ BallDetector::BallDetector()
 
   //detector config struct
   DetectorConfig detect_config;
-  BallColorConfig color_config;
+  // BallColorConfig color_config;
 
   //get user parameters from dynamic reconfigure (yaml entries)
   nh_.param<int>("gaussian_blur_size", detect_config.gaussian_blur_size, params_config_.gaussian_blur_size);
@@ -74,8 +74,11 @@ BallDetector::BallDetector()
   nh_.param<int>("ellipse_size", detect_config.ellipse_size, params_config_.ellipse_size);
   nh_.param<bool>("filter_debug", detect_config.debug, params_config_.debug);
 
-  nh_.param<std::string>("name", color_config.name, params_color_.name);
-  nh_.param<int>("test_val", color_config.test_val, params_color_.test_val);
+  // nh_.param<std::string>("name", color_config.name, params_color_.name);
+  // nh_.param<int>("test_val", color_config.test_val, params_color_.test_val);
+
+  params_color_.name = "";
+  params_color_.test_val = 0;
 
   //sets publishers
   image_pub_ = it_.advertise("image_out", 100);
@@ -94,6 +97,9 @@ BallDetector::BallDetector()
   callback_fnc_ = boost::bind(&BallDetector::dynParamCallback, this, _1, _2);
   param_server_.setCallback(callback_fnc_);
 
+  // color configure
+  color_config_path_ = ros::package::getPath(ROS_PACKAGE_NAME) + "/config/red_ball_config.yaml";
+
   // web setting
   param_pub_ = nh_.advertise<op3_ball_detector::BallDetectorParams>("current_params", 1);
   param_command_sub_ = nh_.subscribe("param_command", 1, &BallDetector::paramCommandCallback, this);
@@ -105,9 +111,10 @@ BallDetector::BallDetector()
 
   //sets config and prints it
   params_config_ = detect_config;
-  params_color_ = color_config;
+  // params_color_ = color_config;
   init_param_ = true;
   printConfig();
+  process();
 }
 
 BallDetector::~BallDetector()
@@ -133,17 +140,22 @@ void BallDetector::process()
   if (enable_ == false)
     return;
 
+  switch_detection_flag_ = true;
+
+  if (switch_detection_flag_ == true)
+  {
+    loadDetectionSettings();
+    applyDetectionSettings();
+    std::cout << "\n\nIN PROCESS\n";
+    printConfig();
+  }
+
   if (cv_img_ptr_sub_ != NULL)
   {
     cv::Mat img_hsv, img_filtered;
 
     // set input image
     setInputImage(cv_img_ptr_sub_->image, img_hsv);
-
-    if (switch_detection_flag_ == true)
-    {
-      applyDetectionSettings();
-    }
 
     // image filtering
     filterImage(img_hsv, img_filtered);
@@ -397,7 +409,21 @@ bool BallDetector::switchDetectionCallback(op3_ball_detector::SwitchDetection::R
 
 bool BallDetector::loadDetectionSettings()
 {
-  // STUB
+  try
+  {
+    YAML::Node config = YAML::LoadFile(color_config_path_.c_str());
+
+    params_color_.name = config["name"].as<std::string>();
+    params_color_.test_val = config["test_val"].as<int>();
+    has_color_config_ = true;
+  }
+   catch (const std::exception& e)
+  {
+    ROS_ERROR_STREAM("Failed to Get detection settings : " << color_config_path_);
+    return false;
+  }
+
+  return true;
 }
 
 void BallDetector::applyDetectionSettings()
