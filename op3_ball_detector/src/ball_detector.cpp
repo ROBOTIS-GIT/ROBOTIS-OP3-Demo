@@ -29,7 +29,8 @@ BallDetector::BallDetector()
     enable_(true),
     params_config_(),
     init_param_(false),
-    not_found_count_(0)
+    not_found_count_(0),
+    switch_detection_flag_(false)
 {
   has_path_ = nh_.getParam("yaml_path", param_path_);
   has_color_config_ = nh_.getParam("color_path", color_config_path_);
@@ -99,6 +100,7 @@ BallDetector::BallDetector()
   set_param_client_ = nh_.advertiseService("set_param", &BallDetector::setParamCallback, this);
   get_param_client_ = nh_.advertiseService("get_param", &BallDetector::getParamCallback, this);
   save_image_client_ = nh_.advertiseService("save_image", &BallDetector::saveImageCallback, this);
+  switch_detection_client_ = nh_.advertiseService("switch_detecton", &BallDetector::switchDetectionCallback, this);
   default_setting_path_ = ros::package::getPath(ROS_PACKAGE_NAME) + "/config/ball_detector_params_default.yaml";
 
   //sets config and prints it
@@ -137,6 +139,11 @@ void BallDetector::process()
 
     // set input image
     setInputImage(cv_img_ptr_sub_->image, img_hsv);
+
+    if (switch_detection_flag_ == true)
+    {
+      applyDetectionSettings();
+    }
 
     // image filtering
     filterImage(img_hsv, img_filtered);
@@ -368,6 +375,34 @@ bool BallDetector::saveImageCallback(op3_ball_detector::SaveImage::Request &req,
   }
 
   return true;
+}
+
+bool BallDetector::switchDetectionCallback(op3_ball_detector::SwitchDetection::Request &req, op3_ball_detector::SwitchDetection::Response &res)
+{
+  // Not set, turn on improved detection
+  if (switch_detection_flag_ == false)
+  {
+    switch_detection_flag_ = true;
+    loadDetectionSettings();
+    res.returns = "Improved detection loaded.";
+  }
+  else // otherwise, turn it off
+  {
+    switch_detection_flag_ = false;
+    // define unloading
+    res.returns = "Improved detection unloaded.";
+  }
+  return true;
+}
+
+bool BallDetector::loadDetectionSettings()
+{
+  // STUB
+}
+
+void BallDetector::applyDetectionSettings()
+{
+  // STUB
 }
 
 void BallDetector::resetParameter()
