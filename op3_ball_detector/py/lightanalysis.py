@@ -1,6 +1,7 @@
 import os, sys
 from scipy import stats
 from PIL import Image
+import matplotlib.pyplot as plot
 
 #
 #Author: Brady Testa
@@ -61,7 +62,33 @@ for i in range(len(inputFolder)):
     linregLight[i] = int(lvm[i][1])
     #print(str(linregLight[i]) + " " + str(linregBV[i]))
 #print(linregBV)
-slope, intercept, rv, pv, serr = stats.linregress(linregBV, linregLight)
+slope, intercept, rv, pv, serr = stats.linregress(linregLight, linregBV)
 print("mx+ b: " + str(float(slope)) + "x + " + str(float(intercept)))
 print("r-value is: " + str(float(rv)))
 
+
+def regression(x):
+    return float(slope)*float(x) + float(intercept);
+
+line = [0.0]*50
+for i in range(len(inputFolder)):
+    line[i] = regression(linregLight[i])
+    
+#print(line[5])
+plot.plot(linregLight,linregBV, 'o', label = "Individual points")
+plot.plot(linregLight, line, 'r', label ="line")
+plot.legend()
+plot.show()
+
+
+
+
+
+def main():
+    response = int(input("Please enter the estimated resistance of the resistor: "))
+    low = regression(response*1.1)
+    high = regression(response*.9)
+    print("ESTIMATION: " + str(low) + ", " + str(high))
+
+
+main()
