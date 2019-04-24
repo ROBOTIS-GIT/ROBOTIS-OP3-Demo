@@ -139,6 +139,11 @@ class BallDetector
   std::string param_path_;
   bool has_path_;
 
+  //Color configure
+  BallColorConfig params_color_;
+  std::string color_config_path_;
+  bool has_color_config_;
+
   // web setting
   std::string default_setting_path_;
   ros::Publisher param_pub_;

@@ -101,5 +101,12 @@ class DetectorConfig
   }
 };
 
+class BallColorConfig
+{
+ public:
+  std::string name;
+  int test_val; 
+};
+
 }
 #endif  // _DETECTOR_CONFIG_H_
