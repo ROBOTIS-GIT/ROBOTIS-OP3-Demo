@@ -73,9 +73,6 @@ BallDetector::BallDetector()
   nh_.param<int>("ellipse_size", detect_config.ellipse_size, params_config_.ellipse_size);
   nh_.param<bool>("filter_debug", detect_config.debug, params_config_.debug);
 
-  // nh_.param<std::string>("name", color_config.name, params_color_.name);
-  // nh_.param<int>("test_val", color_config.test_val, params_color_.test_val);
-
   params_color_.name = "";
   params_color_.test_val = 0;
 
