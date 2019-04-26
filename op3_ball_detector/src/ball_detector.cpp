@@ -29,12 +29,16 @@ BallDetector::BallDetector()
     enable_(true),
     params_config_(),
     init_param_(false),
-    not_found_count_(0)
+    not_found_count_(0),
+    switch_detection_flag_(false)
 {
   has_path_ = nh_.getParam("yaml_path", param_path_);
+  has_color_config_ = nh_.getParam("color_path", color_config_path_);
 
   if (has_path_)
     std::cout << "Path : " << param_path_ << std::endl;
+  if(has_color_config_)
+    std::cout << "Color config path : " << color_config_path_ << std::endl;
 
   //detector config struct
   DetectorConfig detect_config;
@@ -69,6 +73,9 @@ BallDetector::BallDetector()
   nh_.param<int>("ellipse_size", detect_config.ellipse_size, params_config_.ellipse_size);
   nh_.param<bool>("filter_debug", detect_config.debug, params_config_.debug);
 
+  params_color_.name = "";
+  params_color_.test_val = 0;
+
   //sets publishers
   image_pub_ = it_.advertise("image_out", 100);
   circles_pub_ = nh_.advertise<op3_ball_detector::CircleSetStamped>("circle_set", 100);
@@ -86,18 +93,23 @@ BallDetector::BallDetector()
   callback_fnc_ = boost::bind(&BallDetector::dynParamCallback, this, _1, _2);
   param_server_.setCallback(callback_fnc_);
 
+  // color configure
+  color_config_path_ = ros::package::getPath(ROS_PACKAGE_NAME) + "/config/red_ball_config.yaml";
+
   // web setting
   param_pub_ = nh_.advertise<op3_ball_detector::BallDetectorParams>("current_params", 1);
   param_command_sub_ = nh_.subscribe("param_command", 1, &BallDetector::paramCommandCallback, this);
   set_param_client_ = nh_.advertiseService("set_param", &BallDetector::setParamCallback, this);
   get_param_client_ = nh_.advertiseService("get_param", &BallDetector::getParamCallback, this);
   save_image_client_ = nh_.advertiseService("save_image", &BallDetector::saveImageCallback, this);
+  switch_detection_client_ = nh_.advertiseService("switch_detection", &BallDetector::switchDetectionCallback, this);
   default_setting_path_ = ros::package::getPath(ROS_PACKAGE_NAME) + "/config/ball_detector_params_default.yaml";
 
   //sets config and prints it
   params_config_ = detect_config;
   init_param_ = true;
   printConfig();
+  process();
 }
 
 BallDetector::~BallDetector()
@@ -122,6 +134,19 @@ void BallDetector::process()
 {
   if (enable_ == false)
     return;
+
+  switch_detection_flag_ = true;
+
+  if (switch_detection_flag_ == true)
+  {
+    loadDetectionSettings();
+    applyDetectionSettings();
+    std::cout << "\n\nIN PROCESS\n";
+    printConfig();
+  }
+
+  applyDetectionSettings();
+  printConfig();
 
   if (cv_img_ptr_sub_ != NULL)
   {
@@ -351,13 +376,59 @@ bool BallDetector::saveImageCallback(op3_ball_detector::SaveImage::Request &req,
     if (cv::imwrite(filename, cv_img_ptr_sub_->image) == false) {
       res.returns.name = "Failed for some reason";
     }
-    res.returns.name = "Saved";
+    else {
+      res.returns.name = "Saved";
+    }
   }
   else {
     res.returns.name = "Not Saved";
   }
 
   return true;
+}
+
+bool BallDetector::switchDetectionCallback(op3_ball_detector::SwitchDetection::Request &req, op3_ball_detector::SwitchDetection::Response &res)
+{
+  // Not set, turn on improved detection
+  if (switch_detection_flag_ == false)
+  {
+    switch_detection_flag_ = true;
+    loadDetectionSettings();
+    res.returns = "Improved detection loaded.";
+  }
+  else // otherwise, turn it off
+  {
+    switch_detection_flag_ = false;
+    // define unloading
+    res.returns = "Improved detection unloaded.";
+  }
+  return true;
+}
+
+bool BallDetector::loadDetectionSettings()
+{
+  try
+  {
+    YAML::Node config = YAML::LoadFile(color_config_path_.c_str());
+
+    params_color_.name = config["name"].as<std::string>();
+    params_color_.test_val = config["test_val"].as<int>();
+    has_color_config_ = true;
+  }
+   catch (const std::exception& e)
+  {
+    ROS_ERROR_STREAM("Failed to Get detection settings : " << color_config_path_);
+    return false;
+  }
+
+  return true;
+}
+
+void BallDetector::applyDetectionSettings()
+{
+  if(!has_color_config_)
+    return;
+  params_config_.filter_threshold.h_min = params_color_.test_val;
 }
 
 void BallDetector::resetParameter()
@@ -462,6 +533,10 @@ void BallDetector::printConfig()
             << params_config_.filter2_threshold.v_max << std::endl << "    ellipse_size: "
             << params_config_.ellipse_size << std::endl << "    filter_image_to_debug: " << params_config_.debug
             << std::endl << std::endl;
+
+  std::cout << "Test Configuration:" << std::endl << "    name: "
+            << params_color_.name << std::endl << "    test_val: "
+            << params_color_.test_val << std::endl;
 }
 
 void BallDetector::saveConfig()

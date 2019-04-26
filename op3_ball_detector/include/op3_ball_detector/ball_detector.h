@@ -45,6 +45,7 @@
 #include "op3_ball_detector/SetParameters.h"
 
 #include "op3_ball_detector/SaveImage.h"
+#include "op3_ball_detector/SwitchDetection.h"
 
 namespace robotis_op
 {
@@ -84,9 +85,14 @@ class BallDetector
   bool getParamCallback(op3_ball_detector::GetParameters::Request &req, op3_ball_detector::GetParameters::Response &res);
 
   bool saveImageCallback(op3_ball_detector::SaveImage::Request &req, op3_ball_detector::SaveImage::Response &res);
+  bool switchDetectionCallback(op3_ball_detector::SwitchDetection::Request &req, op3_ball_detector::SwitchDetection::Response &res);
+
+  bool loadDetectionSettings();
+  void applyDetectionSettings(); // types TBD
 
   void resetParameter();
   void publishParam();
+
 
   void printConfig();
   void saveConfig();
@@ -133,6 +139,11 @@ class BallDetector
   std::string param_path_;
   bool has_path_;
 
+  //Color configure
+  BallColorConfig params_color_;
+  std::string color_config_path_;
+  bool has_color_config_;
+
   // web setting
   std::string default_setting_path_;
   ros::Publisher param_pub_;
@@ -140,6 +151,7 @@ class BallDetector
   ros::ServiceServer get_param_client_;
   ros::ServiceServer set_param_client_;
   ros::ServiceServer save_image_client_;
+  ros::ServiceServer switch_detection_client_;
 
   //flag indicating a new image has been received
   bool new_image_flag_;
@@ -165,6 +177,10 @@ class BallDetector
 
   dynamic_reconfigure::Server<op3_ball_detector::DetectorParamsConfig> param_server_;
   dynamic_reconfigure::Server<op3_ball_detector::DetectorParamsConfig>::CallbackType callback_fnc_;
+
+  // Flag for indicating modified detection mode
+  bool switch_detection_flag_;
+  // once structure is finalized set pointer to structure here
 };
 
 }       // namespace robotis_op

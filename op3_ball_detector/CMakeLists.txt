@@ -60,6 +60,7 @@ add_service_files(
   GetParameters.srv
   SetParameters.srv
   SaveImage.srv
+  SwitchDetection.srv
 )
 
 generate_messages(
