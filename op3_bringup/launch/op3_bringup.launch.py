@@ -23,7 +23,10 @@ def generate_launch_description():
       'image_height': 720,
       'framerate': 30.0,
       'camera_frame_id': 'cam_link',
-      'camera_name': 'camera'
+      'camera_name': 'camera',
+      'io_method': 'mmap',
+      'pixel_format': 'mjpeg2rgb',
+      'av_device_format': 'YUV422P',
     }],
     remappings=[('/image_raw', '/usb_cam_node/image_raw')]
   )
