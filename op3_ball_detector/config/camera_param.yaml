@@ -10,7 +10,7 @@
       image_height: 720
       camera_name: "camera"
       #camera_info_url: "package://op3_ball_detector/config/camera_info.yaml"
-      brightness: 110
+      brightness: 128
       contrast: 128
       saturation: 128
       sharpness: 128

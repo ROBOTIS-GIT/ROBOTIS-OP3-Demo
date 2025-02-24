@@ -6,10 +6,10 @@
     hough_accum_resolution: 1.0
     min_circle_dist: 50.0
     hough_accum_th: 28.0
-    min_radius: 20
+    min_radius: 18
     max_radius: 300
     filter_h_min: 350
-    filter_h_max: 45
+    filter_h_max: 40
     filter_s_min: 150
     filter_s_max: 255
     filter_v_min: 65
