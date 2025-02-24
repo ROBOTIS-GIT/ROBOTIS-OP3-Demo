@@ -25,7 +25,7 @@ def generate_launch_description():
         output='screen',
         # remappings=[('/ball_detector_node/image_in', '/image_raw'),
         #             ('/ball_detector_node/cameraInfo_in', '/camera_info'),],
-        remappings=[('/ball_detector_node/image_in', '/usb_cam_node/image_raw'),
+        remappings=[('/ball_detector_node/image_in', '/usb_cam_node/image_raw/compressed'),
                     ('/ball_detector_node/cameraInfo_in', '/usb_cam_node/camera_info'),],
         parameters=[{"yaml_path": op3_ball_detector_parameter_path}, op3_ball_detector_parameter_path]
     )

@@ -17,6 +17,7 @@
 /* Author: Kayman Jung */
 
 #include <fstream>
+#include <opencv2/imgcodecs.hpp>
 
 #include "op3_ball_detector/ball_detector.h"
 
@@ -167,7 +168,8 @@ void BallDetector::initialize()
 {
   it_ = new image_transport::ImageTransport(this->shared_from_this());
   image_pub_ = it_->advertise("image_out", 100);
-  image_sub_ = it_->subscribe("image_in", 1, &BallDetector::imageCallback, this);
+  // image_sub_ = it_->subscribe("image_in", 1, &BallDetector::imageCallback, this);
+  image_sub_ = this->create_subscription<sensor_msgs::msg::CompressedImage>("image_in", 1, std::bind(&BallDetector::imageCallback, this, std::placeholders::_1));
 }
 
 void BallDetector::paramCallback(const rclcpp::Parameter& p)
@@ -428,18 +430,27 @@ void BallDetector::enableCallback(const std_msgs::msg::Bool::SharedPtr msg)
   enable_ = msg->data;
 }
 
-void BallDetector::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg)
+void BallDetector::imageCallback(const sensor_msgs::msg::CompressedImage::ConstSharedPtr & msg)
 {
   if (enable_ == false)
     return;
 
   try
   {
-    if (msg->encoding.compare(sensor_msgs::image_encodings::MONO8) == 0)
-      this->img_encoding_ = IMG_MONO;
-    if (msg->encoding.compare(sensor_msgs::image_encodings::RGB8) == 0)
-      this->img_encoding_ = IMG_RGB8;
-    this->cv_img_ptr_sub_ = cv_bridge::toCvCopy(msg, msg->encoding);
+    cv::Mat img = cv::imdecode(cv::Mat(msg->data), cv::IMREAD_COLOR);
+    if (img.empty())
+    {
+      RCLCPP_ERROR(this->get_logger(), "cv::imdecode() failed");
+      return;
+    }
+
+    this->cv_img_ptr_sub_ = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGB8);
+    this->img_encoding_ = IMG_RGB8;
+    // if (msg->encoding.compare(sensor_msgs::image_encodings::MONO8) == 0)
+    //   this->img_encoding_ = IMG_MONO;
+    // if (msg->encoding.compare(sensor_msgs::image_encodings::RGB8) == 0)
+    //   this->img_encoding_ = IMG_RGB8;
+    // this->cv_img_ptr_sub_ = cv_bridge::toCvCopy(msg, msg->encoding);
   } catch (cv_bridge::Exception& e)
   {
     RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());

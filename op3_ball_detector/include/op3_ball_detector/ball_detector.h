@@ -25,6 +25,7 @@
 #include <std_msgs/msg/string.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/image_encodings.hpp>
+#include <sensor_msgs/msg/compressed_image.hpp>
 // #include <dynamic_reconfigure/server.h>
 #include "op3_ball_detector_msgs/msg/circle_set_stamped.hpp"
 #include "op3_ball_detector_msgs/msg/ball_detector_params.hpp"
@@ -70,7 +71,7 @@ class BallDetector : public rclcpp::Node
   const static int NOT_FOUND_TH = 30;
 
   //callbacks to image subscription
-  void imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr &msg);
+  void imageCallback(const sensor_msgs::msg::CompressedImage::ConstSharedPtr &msg);
 
   //callbacks to camera info subscription
   void cameraInfoCallback(const sensor_msgs::msg::CameraInfo::SharedPtr msg);
@@ -102,12 +103,13 @@ class BallDetector : public rclcpp::Node
   void drawOutputImage();
 
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr enable_sub_;
+  rclcpp::Subscription<sensor_msgs::msg::CompressedImage>::SharedPtr image_sub_;
 
   //image publisher/subscriber
   image_transport::ImageTransport* it_;
   image_transport::Publisher image_pub_;
   cv_bridge::CvImage cv_img_pub_;
-  image_transport::Subscriber image_sub_;
+  // image_transport::Subscriber image_sub_;
   cv_bridge::CvImagePtr cv_img_ptr_sub_;
 
   bool enable_;
