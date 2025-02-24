@@ -26,24 +26,24 @@ namespace robotis_op
 
 //constants
 const int GAUSSIAN_BLUR_SIZE_DEFAULT = 7;
-const double GAUSSIAN_BLUR_SIGMA_DEFAULT = 2;
-const double CANNY_EDGE_TH_DEFAULT = 130;
-const double HOUGH_ACCUM_RESOLUTION_DEFAULT = 2;
-const double MIN_CIRCLE_DIST_DEFAULT = 30;
-const double HOUGH_ACCUM_TH_DEFAULT = 120;
-const int MIN_RADIUS_DEFAULT = 30;
-const int MAX_RADIUS_DEFAULT = 400;
+const double GAUSSIAN_BLUR_SIGMA_DEFAULT = 2.0;
+const double CANNY_EDGE_TH_DEFAULT = 100.0;
+const double HOUGH_ACCUM_RESOLUTION_DEFAULT = 1.0;
+const double MIN_CIRCLE_DIST_DEFAULT = 50.0;
+const double HOUGH_ACCUM_TH_DEFAULT = 28.0;
+const int MIN_RADIUS_DEFAULT = 20;
+const int MAX_RADIUS_DEFAULT = 300;
 const unsigned int IMG_MONO = 0;
 const unsigned int IMG_RGB8 = 1;
 const int FILTER_RANGE_DEFAULT_MIN = 160;
 const int FILTER_RANGE_DEFAULT_MAX = 255;
-const int FILTER_H_MIN_DEFAULT = 0;
-const int FILTER_H_MAX_DEFAULT = 30;
-const int FILTER_S_MIN_DEFAULT = 0;
+const int FILTER_H_MIN_DEFAULT = 350;
+const int FILTER_H_MAX_DEFAULT = 45;
+const int FILTER_S_MIN_DEFAULT = 150;
 const int FILTER_S_MAX_DEFAULT = 255;
-const int FILTER_V_MIN_DEFAULT = 0;
+const int FILTER_V_MIN_DEFAULT = 35;
 const int FILTER_V_MAX_DEFAULT = 255;
-const int ELLIPSE_SIZE = 5;
+const int ELLIPSE_SIZE = 2;
 
 class HsvFilter
 {
