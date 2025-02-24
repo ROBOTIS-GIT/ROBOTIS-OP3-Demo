@@ -70,7 +70,7 @@ class VisionDemo : public OPDemo
   // rclcpp::Publisher<std_msgs::msg::String>::SharedPtr module_control_pub_;
   // rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr motion_index_pub_;
   // rclcpp::Publisher<robotis_controller_msgs::msg::SyncWriteItem>::SharedPtr rgb_led_pub_;  
-  // rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr face_tracking_command_pub_;
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr face_tracking_command_pub_;
 
   // rclcpp::Subscription<std_msgs::msg::String>::SharedPtr button_sub_;
   // rclcpp::Subscription<std_msgs::msg::Int32MultiArray>::SharedPtr faceCoord_sub_;

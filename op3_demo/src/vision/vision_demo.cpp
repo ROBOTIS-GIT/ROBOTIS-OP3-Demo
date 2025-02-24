@@ -54,6 +54,7 @@ void VisionDemo::setNode(rclcpp::Node::SharedPtr node)
   node_ = node;
   if (node_ != nullptr)
   {
+    face_tracking_command_pub_ = node_->create_publisher<std_msgs::msg::Bool>("/face_tracking/command", 10);
     faceCoord_sub_ = node_->create_subscription<std_msgs::msg::Int32MultiArray>("/faceCoord", 10, std::bind(&VisionDemo::facePositionCallback, this, std::placeholders::_1));
   }
   else
@@ -72,7 +73,6 @@ void VisionDemo::setDemoEnable()
     RCLCPP_ERROR(rclcpp::get_logger("VisionDemo"), "Node is not set, cannot set demo enable");
     return;
   }
-  auto face_tracking_command_pub_ = node_->create_publisher<std_msgs::msg::Bool>("/face_tracking/command", 10);
 
   // change to motion module
   setModuleToDemo("action_module");
@@ -106,13 +106,10 @@ void VisionDemo::setDemoDisable()
     RCLCPP_ERROR(rclcpp::get_logger("VisionDemo"), "Node is not set, cannot set demo disable");
     return;
   }
-  auto face_tracking_command_pub_ = node_->create_publisher<std_msgs::msg::Bool>("/face_tracking/command", 10);
+
   std_msgs::msg::Bool command;
   command.data = enable_;
   face_tracking_command_pub_->publish(command);
-
-  if (faceCoord_sub_)
-    faceCoord_sub_.reset();
 }
 
 void VisionDemo::process()
