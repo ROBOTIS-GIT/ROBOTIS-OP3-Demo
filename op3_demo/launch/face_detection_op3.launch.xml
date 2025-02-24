@@ -13,7 +13,7 @@
               $(var face_cascade_name_3) 
               $(var face_cascade_name_4)"
         output="screen">
-    <param name="imageInput" value="/usb_cam_node/image_raw" />
+    <param name="imageInput" value="/usb_cam_node/image_raw/compressed" />
     <param name="imageOutput" value="/facerec/image_raw" />
     <param name="displayed_Image" value="0" />
     <param name="publish" value="3" />
