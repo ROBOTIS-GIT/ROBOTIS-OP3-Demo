@@ -239,6 +239,8 @@ void buttonHandlerCallback(const std_msgs::msg::String::SharedPtr msg)
         case ActionDemo:
           dxlTorqueChecker();
           playSound(default_mp3_path + "Start motion demonstration.mp3");
+          // Ensure voice control mode is disabled for button-initiated action mode
+          action_demo->setVoiceControlMode(false);
           break;
 
         default:
@@ -370,6 +372,10 @@ void demoModeCommandCallback(const std_msgs::msg::String::SharedPtr msg)
     {
       desired_status = ActionDemo;
       apply_desired = true;
+
+      // Set voice control mode when entering action mode via voice command
+      action_demo->setVoiceControlMode(true);
+      RCLCPP_INFO(node->get_logger(), "Voice control mode enabled for action demo");
 
       // play sound
       dxlTorqueChecker();

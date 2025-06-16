@@ -23,11 +23,9 @@
 #include <std_msgs/msg/int32.hpp>
 #include <std_msgs/msg/string.hpp>
 
-#include <boost/thread.hpp>
 #include <yaml-cpp/yaml.h>
 
 #include "op3_demo/op_demo.h"
-#include "robotis_controller_msgs/msg/joint_ctrl_module.hpp"
 #include "robotis_controller_msgs/srv/set_module.hpp"
 #include "op3_action_module_msgs/srv/is_running.hpp"
 
@@ -49,6 +47,13 @@ class ActionDemo : public OPDemo
   void setNode(rclcpp::Node::SharedPtr node);
   void buttonHandlerCallback(const std_msgs::msg::String::SharedPtr msg);
   void demoCommandCallback(const std_msgs::msg::String::SharedPtr msg);
+  void setVoiceControlMode(bool voice_mode);
+
+  // Voice control methods - made public for voice command access
+  void playAction(int motion_index);
+  void stopAction();
+  void brakeAction();
+  bool isActionRunning();
 
  protected:
   enum ActionCommandIndex
@@ -68,9 +73,6 @@ class ActionDemo : public OPDemo
   const int SPIN_RATE;
   const bool DEBUG_PRINT;
 
-  // void processThread();
-  // void callbackThread();
-
   void startProcess(const std::string &set_name = "default");
   void resumeProcess();
   void pauseProcess();
@@ -84,24 +86,8 @@ class ActionDemo : public OPDemo
   void playMP3(std::string &path);
   void stopMP3();
 
-  void playAction(int motion_index);
-  void stopAction();
-  void brakeAction();
-  bool isActionRunning();
-
   void setModuleToDemo(const std::string &module_name);
   void callServiceSettingModule(const std::string &module_name);
-  // void actionSetNameCallback(const std_msgs::msg::String::SharedPtr msg);
-
-  // rclcpp::Publisher<std_msgs::msg::String>::SharedPtr module_control_pub_;
-  // rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr motion_index_pub_;
-  // rclcpp::Publisher<std_msgs::msg::String>::SharedPtr play_sound_pub_;
-
-  // rclcpp::Subscription<std_msgs::msg::String>::SharedPtr button_sub_;
-  // rclcpp::Subscription<std_msgs::msg::String>::SharedPtr demo_command_sub_;
-
-  // rclcpp::Client<op3_action_module_msgs::srv::IsRunning>::SharedPtr is_running_client_;
-  // rclcpp::Client<robotis_controller_msgs::srv::SetModule>::SharedPtr set_joint_module_client_;
 
   std::map<int, std::string> action_sound_table_;
   std::vector<int> play_list_;
@@ -111,6 +97,8 @@ class ActionDemo : public OPDemo
   int play_index_;
 
   int play_status_;
+  bool voice_control_mode_;  // Voice control mode flag
+  bool stop_action_executed_;  // Flag to prevent repeated stopAction() calls
 };
 
 } /* namespace robotis_op */

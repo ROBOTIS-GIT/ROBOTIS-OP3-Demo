@@ -30,6 +30,8 @@ ActionDemo::ActionDemo()
     play_status_(ActionStatus::StopAction)
 {
   enable_ = false;
+  voice_control_mode_ = false;  // Initialize voice control mode
+  stop_action_executed_ = false;  // Initialize stop action flag
 
   std::string default_path = ament_index_cpp::get_package_share_directory("op3_demo") + "/list/action_script.yaml";
   // this->declare_parameter<std::string>("action_script", default_path);
@@ -69,9 +71,18 @@ void ActionDemo::setDemoEnable()
   if (DEBUG_PRINT)
     RCLCPP_INFO(rclcpp::get_logger("ActionDemo"), "Start ActionScript Demo");
 
-  playAction(InitPose);
-
-  startProcess(play_list_name_);
+  // Only start process if not in voice control mode
+  if (!voice_control_mode_)
+  {
+    playAction(InitPose);
+    startProcess(play_list_name_);
+    RCLCPP_INFO(rclcpp::get_logger("ActionDemo"), "Started default action process");
+  }
+  else
+  {
+    playAction(InitPose);
+    RCLCPP_INFO(rclcpp::get_logger("ActionDemo"), "Voice control mode - waiting for voice commands");
+  }
 }
 
 void ActionDemo::setDemoDisable()
@@ -79,6 +90,7 @@ void ActionDemo::setDemoDisable()
   stopProcess();
 
   enable_ = false;
+  voice_control_mode_ = false;  // Reset voice control mode
   RCLCPP_WARN(rclcpp::get_logger("ActionDemo"), "Set Action demo disable");
   play_list_.resize(0);
 }
@@ -87,6 +99,28 @@ void ActionDemo::process()
 {
   if (enable_ == false || node_ == nullptr)
     return;
+
+  // Handle StopAction state even in voice control mode to prevent continuous stopAction calls
+  if (play_status_ == StopAction)
+  {
+    if (!stop_action_executed_)
+    {
+      stopMP3();
+      stopAction();
+      stop_action_executed_ = true;  // Mark as executed
+      RCLCPP_DEBUG(rclcpp::get_logger("ActionDemo"), "StopAction executed once");
+    }
+    
+    play_status_ = ReadyAction;
+    return;
+  }
+
+  // Skip default action sequence processing in voice control mode
+  if (voice_control_mode_)
+  {
+    RCLCPP_DEBUG(rclcpp::get_logger("ActionDemo"), "Voice control mode active - skipping default action sequence");
+    return;
+  }
 
   switch (play_status_)
   {
@@ -129,16 +163,6 @@ void ActionDemo::process()
       break;
     }
 
-    case StopAction:
-    {
-      stopMP3();
-      stopAction();
-
-      play_status_ = ReadyAction;
-
-      break;
-    }
-
     default:
       break;
   }
@@ -149,11 +173,13 @@ void ActionDemo::startProcess(const std::string &set_name)
   parseActionScriptSetName(script_path_, set_name);
 
   play_status_ = PlayAction;
+  stop_action_executed_ = false;  // Reset flag when starting a new process
 }
 
 void ActionDemo::resumeProcess()
 {
   play_status_ = PlayAction;
+  stop_action_executed_ = false;  // Reset flag when resuming
 }
 
 void ActionDemo::pauseProcess()
@@ -165,6 +191,7 @@ void ActionDemo::stopProcess()
 {
   play_index_ = 0;
   play_status_ = ActionStatus::StopAction;
+  stop_action_executed_ = false;  // Reset flag when entering StopAction state
 }
 
 // void ActionDemo::processThread()
@@ -306,6 +333,10 @@ void ActionDemo::playAction(int motion_index)
     RCLCPP_ERROR(rclcpp::get_logger("ActionDemo"), "Node is not set, cannot play motion");
     return;
   }
+  
+  // Reset stop action flag when starting a new action
+  stop_action_executed_ = false;
+  
   auto motion_index_pub_ = node_->create_publisher<std_msgs::msg::Int32>("/robotis/action/page_num", 10);
   std_msgs::msg::Int32 motion_msg;
   motion_msg.data = motion_index;
@@ -448,6 +479,13 @@ void ActionDemo::demoCommandCallback(const std_msgs::msg::String::SharedPtr msg)
   {
     pauseProcess();
   }
+}
+
+void ActionDemo::setVoiceControlMode(bool voice_mode)
+{
+  voice_control_mode_ = voice_mode;
+  RCLCPP_INFO(rclcpp::get_logger("ActionDemo"), "Voice control mode set to: %s", 
+              voice_mode ? "true" : "false");
 }
 
 } /* namespace robotis_op */
